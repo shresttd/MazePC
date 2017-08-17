@@ -1,0 +1,22 @@
+package generation;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import generation.CardinalDirection;
+import generation.Cells;
+import generation.Wall;
+import generation.MazeFactory;
+import generation.MazeBuilder;
+
+import org.junit.Before;
+import org.junit.Test;
+
+public class MazeFactoryTest {
+
+	@Test
+	public void test() {
+		fail("Not yet implemented");
+	}
+
+}

@@ -1,0 +1,50 @@
+/**
+ * 
+ */
+package generation;
+
+
+/**
+ * @author TJShrestha
+ *
+ */
+public class OrderStub implements Order{
+
+	/**
+	 * 
+	 */
+	public OrderStub() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public int getSkillLevel() {
+		// TODO Auto-generated method stub
+		return 5;
+	}
+
+	@Override
+	public Builder getBuilder() {
+		// TODO Auto-generated method stub
+		return Builder.DFS;
+	}
+
+	@Override
+	public boolean isPerfect() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public void deliver(MazeConfiguration mazeConfig) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateProgress(int percentage) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

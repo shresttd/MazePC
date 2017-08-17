@@ -1,0 +1,60 @@
+package generation;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class MazeFactoryTest {
+    
+	
+	 static Factory[] testFactory;
+	 
+	Thread testThread;
+	
+	MazeConfiguration testConfiguration = new MazeContainer();
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		
+		testFactory = new Factory[7];
+		
+		testFactory[0] = new MazeFactory(true);
+		testFactory[0].waitTillDelivered();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void test() {
+		fail("Not yet implemented");
+	}
+	
+	@Test
+	public void testHasExit() {
+		
+		Order order = new Order();
+		
+		Factory exitFactory;
+		exitFactory = new MazeFactory(true);
+		exitFactory.waitTillDelivered();
+		
+		exitFactory.order(order);
+		
+		
+	}
+
+}

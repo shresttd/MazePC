@@ -1,0 +1,9 @@
+package generation;
+
+public class MazeBuilderEller extends MazeBuilder {
+
+	public MazeBuilderEller() {
+		// TODO Auto-generated constructor stub
+	}
+
+}

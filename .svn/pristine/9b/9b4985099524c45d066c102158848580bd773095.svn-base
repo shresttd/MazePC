@@ -1,0 +1,235 @@
+package generation;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class MazeFactoryTest {
+    
+		 
+	Thread testThread;
+	
+	MazeConfiguration testConfiguration = new MazeContainer();
+	
+	OrderStub stub;
+	Factory testFactory;
+    MazeConfiguration mazeConfig;
+
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+	
+	/**
+	 * Checks if the exit is reachable from a certain starting position.
+	 */
+	@Test
+	public void testHasExit() {
+		
+		OrderStub stub = new OrderStub();
+		
+		Factory hasExitFactory;
+		hasExitFactory = new MazeFactory(true);
+		hasExitFactory.order(stub);
+
+		hasExitFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+				
+		int INFINITY = Integer.MAX_VALUE;
+		
+		mazeConfig.setStartingPosition(0, 1);
+		
+		assertTrue(INFINITY > mazeConfig.getMazedists().getDistance(0, 1));
+	}
+	
+	/**
+	 * Checks to see if the exit is reachable from every spot in the maze.
+	 */
+	@Test
+    public void testExitFromEverySpot(){
+		
+		OrderStub stub = new OrderStub();
+		
+		Factory exitFromEverySpotFactory;
+		exitFromEverySpotFactory = new MazeFactory(true);
+		exitFromEverySpotFactory.order(stub);
+
+		exitFromEverySpotFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+				
+		int INFINITY = Integer.MAX_VALUE;
+	
+		int row;
+		int column; 
+		
+		for ( row = 0; row < mazeConfig.getWidth() - 1; row++) {
+			for ( column = 0; column < mazeConfig.getHeight() - 1; column++ ) {
+		        assertTrue(INFINITY > mazeConfig.getMazedists().getDistance(row, column));
+			}
+		}
+	}
+	
+	
+	/**
+	 * Checks to make sure the width of the maze is correct.
+	 */
+	@Test
+	public void testWidth(){
+        OrderStub stub = new OrderStub();
+		
+		Factory widthFactory;
+		widthFactory = new MazeFactory(true);
+		widthFactory.order(stub);
+
+		widthFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		mazeConfig.setWidth(10);
+		
+		assertTrue(10 == mazeConfig.getWidth());
+		
+		mazeConfig.setWidth(99);
+		assertTrue(99 == mazeConfig.getWidth());
+	
+	}
+	
+	/** 
+	 * Checks to see that the height of the maze is correct.
+	 */
+	
+	@Test
+	public void testHeight(){
+        OrderStub stub = new OrderStub();
+		
+		Factory heightFactory;
+		heightFactory = new MazeFactory(true);
+		heightFactory.order(stub);
+
+		heightFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		mazeConfig.setHeight(10);
+		assertTrue(10 == mazeConfig.getHeight());
+		
+		mazeConfig.setHeight(99);
+		assertTrue(99 == mazeConfig.getHeight());
+	}
+	
+	//fursthest away
+	//start position same regardless where you are
+	//is the position valid
+	
+	/**
+	 * Checks to see that the entrance and exit positions of the maze are the farthest points in the maze. 
+	 * The distance between the entrance and the exit positions are the maximum distance possible. 
+	 */
+	@Test
+	public void testEntryExitMaxDistance(){
+		
+        OrderStub stub = new OrderStub();
+		
+		Factory testFactory;
+		testFactory = new MazeFactory(true);
+		testFactory.order(stub);
+
+		testFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		int[] startPosition = mazeConfig.getMazedists().getStartPosition();
+		
+		int [] endPosition = mazeConfig.getMazedists().getExitPosition();
+		
+		assertTrue (mazeConfig.getMazedists().getMaxDistance() == mazeConfig.getMazedists().getDistance(startPosition[0], startPosition[1]));
+	}
+	
+	/** 
+	 * Checks to see if every position in the maze is a valid position.
+	 */
+	@Test
+	public void testValidPosition(){
+		
+        OrderStub stub = new OrderStub();
+		
+		Factory heightFactory;
+		heightFactory = new MazeFactory(true);
+		heightFactory.order(stub);
+
+		heightFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		int row;
+		int col;
+				
+		for (row = 0; row < mazeConfig.getWidth() - 1; row++) {
+			for (col = 0; col < mazeConfig.getHeight() - 1; col++){
+				assertTrue(mazeConfig.isValidPosition(row, col));
+			}
+		}		
+	}
+	
+	/**
+	 * Tests to see if the starting position is correct.
+	 */
+	@Test
+	public void testCorrectStartPosition(){
+                
+        OrderStub stub = new OrderStub();
+        
+		Factory positionFactory;
+ 		positionFactory = new MazeFactory(true);
+ 		positionFactory.order(stub);
+ 		
+ 		positionFactory.waitTillDelivered();
+ 		
+ 		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		mazeConfig.setStartingPosition(9, 8);
+		
+		assertTrue(9 == mazeConfig.getStartingPosition()[0] && 8 == mazeConfig.getStartingPosition()[1]);
+		
+	}
+	//test for upper and lower bounds of code (of width, height) are correct. 
+	//also test for expected exception errors!
+    //test that the exit position really has an exit (distance 0 or 1?)
+	
+	@Test
+	public void testExitHasOpening() {
+		
+        OrderStub stub = new OrderStub();
+        
+		Factory positionFactory;
+ 		positionFactory = new MazeFactory(true);
+ 		positionFactory.order(stub);
+ 		
+ 		positionFactory.waitTillDelivered();
+ 		
+ 		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+ 		
+ 		int [] exitPosition = mazeConfig.getMazedists().getExitPosition();
+ 		 		
+ 		assertTrue(1 == mazeConfig.getDistanceToExit(exitPosition[0], exitPosition[1]) );
+	}
+}

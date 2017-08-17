@@ -1,0 +1,14 @@
+package generation;
+
+public class Tuple { 
+	
+	  public final int row; 
+	  public final int column; 
+	  public int parent;
+	  
+	  public Tuple(int row, int column, int parent) { 
+	    this.row = row; 
+	    this.column = column; 
+	    this.parent = parent;
+	  } 
+	} 

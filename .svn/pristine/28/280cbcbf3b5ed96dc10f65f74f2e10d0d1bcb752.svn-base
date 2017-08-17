@@ -1,0 +1,94 @@
+package falstad;
+
+import generation.Distance;
+
+public class WallFollower implements RobotDriver{
+	
+	Distance distance ;	
+	int width ;
+	int height ;
+	int pathLength ;
+    
+	Robot robot ;
+	MazeController mazeController ;
+	
+	public WallFollower() {
+		pathLength = 0 ;
+		
+	}
+
+	@Override
+	public void setRobot(Robot r) {
+		this.robot = r;
+	}
+
+	@Override
+	public void setDimensions(int width, int height) {
+		
+		assert (width >= 0);
+		assert (height >= 0);
+		
+		this.width = width;
+		this.height = height;
+	}
+
+	@Override
+	public void setDistance(Distance distance) {
+		
+		assert (null != distance) ;
+		this.distance = distance;
+	}
+
+	@Override
+	public boolean drive2Exit() throws Exception {	
+		
+		if (robot.isAtExit()) {
+			if (robot.distanceToObstacle(Robot.Direction.RIGHT) == Integer.MAX_VALUE) {
+				System.out.println("huh");
+				robot.rotate(Robot.Turn.RIGHT);
+				this.pathLength ++;
+				robot.move(1, false);
+				return true;
+			}
+			if (robot.distanceToObstacle(Robot.Direction.FORWARD) == Integer.MAX_VALUE) {
+				this.pathLength ++ ; 
+				robot.move(1,  false);
+				return true;
+			}
+		}
+		
+		if (robot.distanceToObstacle(Robot.Direction.LEFT) != 0 ){
+			robot.rotate(Robot.Turn.LEFT);
+		}
+		
+		if (robot.distanceToObstacle(Robot.Direction.LEFT) == 0 
+				&& robot.distanceToObstacle(Robot.Direction.FORWARD) == 0 ) {
+			robot.rotate(Robot.Turn.RIGHT);
+		}
+		
+		this.pathLength ++ ;
+		robot.move(1,  false);
+		
+		return true; 
+	}
+
+	@Override
+	public float getEnergyConsumption() {
+		System.out.println(getPathLength());
+		return BasicRobot.INITIAL_BATTERY_LEVEL - robot.getBatteryLevel();
+	
+	}
+
+	@Override
+	public int getPathLength() {
+		return this.pathLength ;
+	}
+	
+	/**
+	 * Sets the given maze controller to this driver.
+	 * @param controller
+	 */
+	public void setMazeController(MazeController controller) {
+		this.mazeController = controller ; 
+	}
+}

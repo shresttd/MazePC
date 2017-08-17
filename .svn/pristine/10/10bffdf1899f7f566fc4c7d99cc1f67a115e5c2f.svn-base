@@ -1,0 +1,249 @@
+package falstad;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import falstad.Constants.StateGUI;
+import falstad.Robot.Turn;
+import generation.CardinalDirection;
+import generation.Cells;
+import generation.Distance;
+import generation.Factory;
+import generation.MazeBuilder;
+import generation.MazeConfiguration;
+import generation.MazeContainer;
+import generation.MazeFactory;
+import generation.Order;
+import generation.OrderStub;
+
+public class BasicRobotTest {
+
+	OrderStub stub ;
+	Robot testBot ; 
+	MazeController controller ;
+	StateGUI state ;
+	MazeFactory factory; 
+	
+	MazeConfiguration mazeConfig ;
+	
+	static final float INITIAL_BATTERY_LEVEL = 2500 ;
+	static final float DISTANCE_SENSING = 1 ;
+	static final float ROTATE_90 = 3 ;
+	static final float MOVE_FORWARD = 5 ;
+
+	@Before
+	public void setUp() throws Exception {
+		
+		testBot = new BasicRobot() ;
+		controller = new FakeController() ;
+		factory = new MazeFactory();
+		factory.order(controller) ;
+		factory.waitTillDelivered();
+		
+		testBot.setMaze(controller) ;
+		 
+		mazeConfig = controller.getMazeConfiguration();
+		
+		System.out.println(mazeConfig.getHeight() ) ;
+
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testCanSeeExitShit() {
+		
+		int [] exitPosition = mazeConfig.getMazedists().getExitPosition() ;
+		
+		controller.setCurrentPosition(exitPosition[0], exitPosition[1]);
+		
+		CardinalDirection curDir = controller.getCurrentDirection() ;
+		
+		testBot.rotate(Robot.Turn.RIGHT);
+		
+		assertTrue(testBot.canSeeExit(Robot.Direction.FORWARD) ) ;
+	}
+	
+	@Test
+	public void testDistanceToObstacleShit() throws Exception {
+	
+		testBot.getcontroller().setCurrentPosition(0, 0);
+		
+		int distanceToObstacle = testBot.distanceToObstacle(Robot.Direction.FORWARD) ;
+
+		testBot.move(distanceToObstacle, true);
+		
+		System.out.println(testBot.getCurrentPosition());
+	}
+	
+	@Test
+	public void testHasRoomSensor() {
+		assertTrue( testBot.hasRoomSensor() ) ;
+	}
+	
+	@Test
+	public void testHasDistanceSensor() {
+	
+		for ( Robot.Direction dir : Robot.Direction.values() ) {
+			assertTrue( testBot.hasDistanceSensor(dir) ) ;
+		}
+	}
+	
+	@Test
+	public void testGetEnergyForFullRotation() {
+		assertTrue( testBot.getEnergyForFullRotation() == ROTATE_90 * 4 );
+	}
+	
+	@Test
+	public void testGetEnergyForStepForward () {
+		assertTrue (testBot.getEnergyForStepForward() == MOVE_FORWARD ) ;
+	}
+	
+	@Test
+	public void testBatteryLevelAtBeginning() {
+		assertTrue ( testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL ) ;
+	}
+	
+	//not how it works... could just make hasStopped set to batteryLevel = 0; not sure if original intent
+	@Test
+	public void testNoBattery() {
+		
+		int level = 0 ;
+		testBot.setBatteryLevel(level);
+		
+		assertTrue ( testBot.hasStopped() );
+	}
+	
+	@Test
+	public void testBatteryLevelAfterNoMoves() {
+		testBot.move(0, false);
+		
+		assertTrue ( testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL ) ;
+	}
+	
+	@Test 
+	public void testBatteryLevelAfterOneMove() {
+		
+		testBot.move(1, false);
+		
+		assertTrue ( testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL - MOVE_FORWARD ) ;
+	}
+	
+	@Test
+	public void testBatteryLevelAfterLeftRotation() {
+		
+		Turn turn = Robot.Turn.LEFT ;
+		
+		testBot.rotate(turn);
+		assertTrue (testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL - ROTATE_90 ) ;
+		
+	}
+	
+	@Test 
+	public void testBatteryLevelAfterRightRotation() {
+		testBot.rotate(Robot.Turn.RIGHT);
+		assertTrue (testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL - ROTATE_90 ) ;
+	}
+	
+	@Test
+	public void testBatteryLevelAfterAroundRotation() {
+		testBot.rotate(Robot.Turn.AROUND);
+		assertTrue (testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL - ROTATE_90 * 2 ) ;
+	}
+	
+	@Test
+	public void testCanSeeExit() {
+		
+		for ( Robot.Direction dir : Robot.Direction.values() ) {
+		    if ( testBot.distanceToObstacle(dir) == Integer.MAX_VALUE ) {
+		        assertTrue (testBot.canSeeExit(dir) ) ;
+		    }
+		}
+	}
+	
+	@Test
+	public void testDistanceToObstacle() throws Exception {
+		
+		//System.out.println( "current position is " + testBot.getCurrentPosition()[0] + " , "  + 
+		//	testBot.getCurrentPosition()[1]) ;								//might be where width/height are inclusive	
+		
+		int distance = testBot.distanceToObstacle(Robot.Direction.FORWARD) ;
+		testBot.move(distance, true);
+		
+		assertTrue (testBot.getBatteryLevel() == INITIAL_BATTERY_LEVEL - MOVE_FORWARD * distance ) ;
+	}
+	
+	@Test
+	public void testSetBatteryLevel() {				//can also test when battery level is below 0, and when 
+		int level = 100 ;							//battery level is above 2500
+		testBot.setBatteryLevel(level);
+		for (level = 0; level <= INITIAL_BATTERY_LEVEL ; level ++) {
+			testBot.setBatteryLevel(level);
+			assertTrue ( testBot.getBatteryLevel() == level ) ;
+		}
+	}
+	
+	@Test		
+	public void testSetMaze() {				//can't really test without access to controller...	
+		controller testMaze = new controller() ;			//Also get current position, can't test w/o controller
+		testMaze.init();
+		
+		testBot.setMaze(testMaze);
+	}
+	
+	@Test
+	public void testCurrentDirectionAtBegginning() {		//then try rotate, see if current direction changes correctly
+		assertTrue (testBot.getCurrentDirection() == CardinalDirection.East ) ;
+	}
+	
+	@Test
+	public void testRotateLeft() {
+		testBot.rotate(Robot.Turn.LEFT);
+		assertTrue (testBot.getCurrentDirection() == CardinalDirection.South) ;
+	}
+	
+	@Test
+	public void testRotateRight() {
+		testBot.rotate(Robot.Turn.RIGHT);
+		assertTrue (testBot.getCurrentDirection() == CardinalDirection.North) ;
+	}
+	
+	@Test
+	public void testRotateAroundLeft() {
+		testBot.rotate(Robot.Turn.AROUND);
+		assertTrue (testBot.getCurrentDirection() == CardinalDirection.West) ;
+	}
+	
+	@Test
+	public void testIsInsideRoomFalse() {
+		int curPos [] = controller.getCurrentPosition() ;
+		if (!mazeConfig.getMazecells().isInRoom(curPos[0], curPos[1]) ) {
+			assertFalse (testBot.isInsideRoom()) ;
+		}
+	}
+	
+	@Test
+	public void testIsInsideRoomTrue() {
+		int [] inRoom = new int [2] ;
+		int x;
+		int y;
+		for (x = 0; x < mazeConfig.getWidth() ; x ++) {
+			for (y = 0; y < mazeConfig.getHeight() ; y++ ) {
+				if (mazeConfig.getMazecells().isInRoom(x, y) ) {
+					inRoom[0] = x ;
+					inRoom[1] = y ;
+				}
+			}
+		}
+		controller.setCurrentPosition(inRoom[0], inRoom[1] ) ;
+		assertTrue (testBot.isInsideRoom());
+	}
+	
+}

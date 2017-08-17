@@ -1,0 +1,141 @@
+package falstad;
+
+import java.awt.Event;
+import java.awt.event.KeyEvent;
+
+import falstad.Constants.StateGUI;
+import generation.Distance;
+
+public class ManualDriver implements RobotDriver{
+
+	//MazeController mazeController ;
+	
+	Distance distance ;	
+	int width ;
+	int height ;
+	int pathLength ;
+    
+	Robot robot ;
+	MazeController mazeController ;
+	
+	//SimpleKeyListener listener ;
+	//MazeApplication mazeApp ;
+	
+	public ManualDriver() {
+		// TODO Auto-generated constructor stub
+		pathLength = 0 ;
+		
+	}
+
+	@Override
+	public void setRobot(Robot r) {
+		// TODO Auto-generated method stub
+		this.robot = r;
+	}
+
+	@Override
+	public void setDimensions(int width, int height) {
+		// TODO Auto-generated method stub
+		
+		assert (width >= 0);
+		assert (height >= 0);
+		
+		this.width = width;
+		this.height = height;
+	}
+
+	@Override
+	public void setDistance(Distance distance) {
+		// TODO Auto-generated method stub
+		
+		assert (null != distance) ; 
+
+		this.distance = distance;
+	}
+
+	@Override
+	public boolean drive2Exit() throws Exception {
+		// TODO Auto-generated method stub
+		
+		/*if (robot.getBatteryLevel() > 0) {
+			return true;
+		}*/
+		return false;
+	}
+
+	@Override
+	public float getEnergyConsumption() {
+		// TODO Auto-generated method stub
+		System.out.println(getPathLength());
+		return BasicRobot.INITIAL_BATTERY_LEVEL - robot.getBatteryLevel();
+	
+	}
+
+	@Override
+	public int getPathLength() {
+		// TODO Auto-generated method stub
+		
+		//robot = ( BasicRobot ) robot ;
+		
+		//return robot.pathLength;
+		//return BasicRobot.pathLength ;
+		return this.pathLength ;
+	}
+	
+	public void setMazeController(MazeController controller) {
+		this.mazeController = controller ; 
+	}
+	
+	public boolean keyDown(int key) {
+
+		switch (mazeController.getState() ) {
+		case STATE_TITLE: {
+			this.pathLength = 0 ;
+			robot.setBatteryLevel(BasicRobot.INITIAL_BATTERY_LEVEL) ;
+			mazeController.keyDown(key) ;
+			break;
+			}
+		case STATE_PLAY : {		
+			switch (key) { 
+			case 107 : {		//up
+				
+				if (robot.distanceToObstacle(Robot.Direction.FORWARD ) > 0 ) {
+				    this.pathLength ++ ;
+				}
+				
+				robot.move(1, true);
+				break;
+			}
+			case 104 : {			//left
+				robot.rotate(Robot.Turn.LEFT) ; 
+				break;
+			}
+			case 108 : {					//right
+				robot.rotate(Robot.Turn.RIGHT) ;
+				break;
+			}
+			case 106 : {			//down				//Needs to be fixed
+				robot.rotate(Robot.Turn.AROUND);
+				robot.move(1, true);
+				break;
+			}
+
+			default : {
+				mazeController.keyDown(key) ;
+			}
+			}
+			break;
+		}
+		
+		default : {
+			mazeController.keyDown(key) ;
+		}
+		}
+		
+		System.out.println("Key: " + key);
+		System.out.println("pathlength: " + pathLength);
+		
+		return true ;
+	}
+	
+}

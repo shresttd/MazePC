@@ -1,0 +1,71 @@
+package falstad;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import generation.CardinalDirection;
+import generation.Order;
+import generation.OrderStub;
+
+public class BasicRobotTest {
+
+	OrderStub stub ;
+	BasicRobot testBot ; 
+	MazeController mazeController ;
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+		stub = new OrderStub() ;
+		
+		testBot = new BasicRobot() ;
+		mazeController = new MazeController(Order.Builder.Eller) ;
+		
+		testBot.setMaze(mazeController) ;
+		
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testCanSeeExit() {
+		
+		int [] exitPosition = testBot.getMazeController().getMazeConfiguration().getMazedists().getExitPosition() ;
+		
+		testBot.getMazeController().setCurrentPosition(exitPosition[0], exitPosition[1]);
+		
+		CardinalDirection curDir = testBot.getMazeController().getCurrentDirection() ;
+		
+		testBot.rotate(Robot.Turn.RIGHT);
+		
+		assertTrue(testBot.canSeeExit(Robot.Direction.FORWARD) ) ;
+	}
+	
+	@Test
+	public void testDistanceToObstacle() throws Exception {
+	
+		testBot.getMazeController().setCurrentPosition(0, 0);
+		
+		int distanceToObstacle = testBot.distanceToObstacle(Robot.Direction.FORWARD) ;
+
+		testBot.move(distanceToObstacle, true);
+		
+		System.out.println(testBot.getCurrentPosition());
+	}
+
+}

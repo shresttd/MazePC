@@ -1,0 +1,107 @@
+package falstad;
+
+import static org.junit.Assert.*;
+
+import java.awt.event.KeyListener;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import falstad.Constants.StateGUI;
+import generation.MazeConfiguration;
+import generation.MazeFactory;
+import generation.Order.Builder;
+
+/**
+ * Tests the Explorer algorithm
+ * @author TJ
+ *
+ */
+public class ExplorerTest {
+
+    Robot robot ; 
+	MazeController controller ;
+	StateGUI state ;
+	MazeFactory factory; 
+	MazeConfiguration mazeConfig ;
+	RobotDriver driver;
+	
+	static final float INITIAL_BATTERY_LEVEL = 2500 ;
+	static final float DISTANCE_SENSING = 1 ;
+	static final float ROTATE_90 = 3 ;
+	static final float MOVE_FORWARD = 5 ;
+	
+	/** 
+	 * Sets up the maze for testing
+	 * @throws Exception
+	 */
+	@Before
+	public void setUp() throws Exception {
+		controller = new FakeController(Builder.DFS, new Explorer(), 2, true) ;		//builder, driver, skill, perfect
+		
+		controller.init() ;
+		factory = new MazeFactory(true);
+		assertTrue(factory.order(controller)) ;
+		factory.waitTillDelivered();
+		
+		assertNotNull(controller.getMazeConfiguration());
+		assertNotNull (controller.getMazeConfiguration().getMazecells());
+		assertNotNull (controller.getMazeConfiguration().getMazedists());
+		
+		robot = controller.getRobot() ; 
+		assertNotNull(robot);
+		robot.setMaze(controller) ;
+	//	assertNotNull(robot.getMazeController);
+		
+		driver = controller.getDriver() ;
+		assertNotNull(driver);
+		driver.setRobot(robot) ;		
+		//assertNotNull(driver.getRobot);
+
+	}
+	@After
+	public void tearDown() throws Exception {
+	}
+	
+	/**
+	 * Tests if energy consumption is correct at the beginning of the maze.
+	 * Should be 0.
+	 */
+	@Test
+	public void testGetEnergyConsumptionAtBeginning() {
+		assertTrue(driver.getEnergyConsumption() == 0) ;
+	}
+	
+	/**
+	 * Tests if path length is correct at the beginning of the maze.
+	 * Should be 0.
+	 */
+	@Test
+	public void testGetPathLengthAtBeginning() {
+		assertTrue(driver.getPathLength() == 0) ;
+	}
+	
+	/**
+	 * Tests if the robot driver leads the robot to exit the maze
+	 * Using the Explorer algorithm
+	 * Should take the robot to the outside of the maze. 
+	 */
+	@Test
+	public void testDrive2Exit() {
+		
+		try {
+			driver.drive2Exit() ;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			assertTrue(controller.isOutside(controller.getCurrentPosition()[0], controller.getCurrentPosition()[1])) ;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+}

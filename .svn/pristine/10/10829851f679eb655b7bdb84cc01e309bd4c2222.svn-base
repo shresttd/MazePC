@@ -1,0 +1,176 @@
+package falstad;
+
+import generation.CardinalDirection;
+import generation.Distance;
+
+/**
+ * The Wizard is a cheater algorithm which uses the
+ * MazeController.getNeighborCloserToExit method to find the exit. The wizard is intended to
+ * work as a baseline algorithm to see how the most efficient algorithm can perform in terms of
+ * energy consumption and path length.
+ * @author TJ
+ *
+ */
+public class Wizard extends ManualDriver {
+	
+	Distance distance ;	
+	int width ;
+	int height ;
+	int pathLength ;
+    
+	Robot robot ;
+	MazeController mazeController ;
+	
+	public Wizard() {
+		pathLength = 0 ;
+	}
+
+	@Override
+	public void setRobot(Robot r) {
+		this.robot = r;
+	}
+
+	@Override
+	public void setDimensions(int width, int height) {		
+		assert (width >= 0);
+		assert (height >= 0);
+		
+		this.width = width;
+		this.height = height;
+	}
+
+	@Override
+	public void setDistance(Distance distance) {
+		assert (null != distance) ; 
+
+		this.distance = distance;
+	}
+
+	@Override
+	public boolean drive2Exit() throws Exception {	
+			
+		if (robot.hasStopped()) {
+			return false ;
+		}
+		
+		if (robot.isAtExit()) {
+			if (robot.distanceToObstacle(Robot.Direction.RIGHT) == Integer.MAX_VALUE) {
+				robot.rotate(Robot.Turn.RIGHT);
+				this.pathLength ++;
+				robot.move(1, false);
+				return true;
+			}
+			if (robot.distanceToObstacle(Robot.Direction.LEFT) == Integer.MAX_VALUE) {
+				robot.rotate(Robot.Turn.LEFT);
+				this.pathLength ++;
+				robot.move(1, false);
+				return true;
+			}
+			if (robot.distanceToObstacle(Robot.Direction.FORWARD) == Integer.MAX_VALUE) {
+				this.pathLength ++ ; 
+				robot.move(1,  false);
+				return true;
+			}
+		}	
+		
+		int[] curPos = robot.getCurrentPosition() ;
+		int[] neighbor = ((BasicRobot) robot).getMazeController().getMazeConfiguration().getNeighborCloserToExit(curPos[0], curPos[1]) ;
+		
+ 		CardinalDirection curDir = robot.getCurrentDirection() ; 
+		CardinalDirection towardNeighbor = neighborCardinalDirection(curPos, neighbor) ;
+
+	    while (!robot.isAtExit()) {
+	    	
+	    	if (robot.hasStopped()) {
+	    		return false;
+	    	}
+	    	
+	    	curPos = robot.getCurrentPosition();
+	    	neighbor = ((BasicRobot) robot).getMazeController().getMazeConfiguration().getNeighborCloserToExit(curPos[0], curPos[1]) ;
+	    	curDir = robot.getCurrentDirection() ; 
+	    	towardNeighbor = neighborCardinalDirection(curPos, neighbor) ;
+	    	
+		    if (towardNeighbor == curDir.oppositeDirection() )  {
+			robot.rotate(Robot.Turn.AROUND);
+		    }
+			else if (towardNeighbor == curDir.rotateClockwise() ) {
+				robot.rotate(Robot.Turn.LEFT);
+			}
+			else if (towardNeighbor == curDir.rotateCounterClockwise() ) {
+				robot.rotate(Robot.Turn.RIGHT);
+			}
+			this.pathLength ++ ;
+			robot.move(1, false);
+		}
+		
+		return true; 
+	}
+
+	@Override
+	public float getEnergyConsumption() {
+		System.out.println(getPathLength());
+		return BasicRobot.INITIAL_BATTERY_LEVEL - robot.getBatteryLevel();
+	}
+
+	@Override
+	public int getPathLength() {
+		return this.pathLength ;
+	}
+	
+	/*@Override
+	public boolean keyDown(int key) {
+
+		switch (mazeController.getState() ) {
+		case STATE_TITLE: {
+			this.pathLength = 0 ;
+			robot.setBatteryLevel(BasicRobot.INITIAL_BATTERY_LEVEL) ;
+			mazeController.keyDown(key) ;
+			break;
+			}
+		case STATE_PLAY : {		
+			switch (key) { 
+			case 107 : {		//up
+				if (robot.distanceToObstacle(Robot.Direction.FORWARD ) > 0 ) {
+				    this.pathLength ++ ;
+				}
+				try {
+					this.drive2Exit() ;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				break;
+			}
+			default : {
+				mazeController.keyDown(key) ;
+			}
+			}
+			break;
+		}
+		
+		default : {
+			mazeController.keyDown(key) ;
+		}
+		}
+		
+		System.out.println("Key: " + key);
+		System.out.println("pathlength: " + pathLength);
+		
+		return true ;
+	}*/
+	
+	/**
+	 * Sets the given maze controller to this driver.
+	 * @param controller
+	 */
+	public void setMazeController(MazeController controller) {
+		this.mazeController = controller ; 
+	}
+	
+	private CardinalDirection neighborCardinalDirection(int[] curPos, int[] neighbor) {
+		int [] neighborDir = new int [2];
+		neighborDir[0] = neighbor[0] - curPos[0] ;
+		neighborDir[1] = neighbor[1] - curPos[1] ;
+		
+		return robot.getCurrentDirection().getDirection(neighborDir[0], neighborDir[1]);
+	}
+}

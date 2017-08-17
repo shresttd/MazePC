@@ -1,0 +1,182 @@
+package generation;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class MazeFactoryTest {
+    
+	
+	 static Factory[] testFactory;
+	 
+	Thread testThread;
+	
+	MazeConfiguration testConfiguration = new MazeContainer();
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		
+		testFactory = new Factory[7];
+		
+		testFactory[0] = new MazeFactory(true);
+		testFactory[0].waitTillDelivered();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void test() {
+		fail("Not yet implemented");
+	}
+	
+	@Test
+	public void testHasExit() {
+		
+		OrderStub stub = new OrderStub();
+		
+		Factory hasExitFactory;
+		hasExitFactory = new MazeFactory(true);
+		hasExitFactory.order(stub);
+
+		hasExitFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+				
+		int INFINITY = Integer.MAX_VALUE;
+		
+		mazeConfig.setStartingPosition(0, 1);
+		
+		assertTrue(INFINITY > mazeConfig.getMazedists().getDistance(0, 1));
+	}
+	
+	//test can get to the exit from every spot in the maze
+	
+	@Test
+    public void testExitFromEverySpot(){
+		
+		OrderStub stub = new OrderStub();
+		
+		Factory exitFromEverySpotFactory;
+		exitFromEverySpotFactory = new MazeFactory(true);
+		exitFromEverySpotFactory.order(stub);
+
+		exitFromEverySpotFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+				
+		int INFINITY = Integer.MAX_VALUE;
+		
+		//Cells testCells = mazeConfig.getMazecells();
+		//mazeConfig.
+		
+		int row;
+		int column; 
+		
+		for ( row = 0; row < mazeConfig.getWidth() - 1; row++) {
+			for ( column = 0; column < mazeConfig.getHeight() - 1; column++ ) {
+		        assertTrue(INFINITY > mazeConfig.getMazedists().getDistance(row, column));
+			}
+		}
+	}
+	
+	@Test
+	public void testWidth(){
+        OrderStub stub = new OrderStub();
+		
+		Factory widthFactory;
+		widthFactory = new MazeFactory(true);
+		widthFactory.order(stub);
+
+		widthFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		mazeConfig.setWidth(10);
+		
+		assertTrue(10 == mazeConfig.getWidth());
+		
+		mazeConfig.setWidth(99);
+		assertTrue(99 == mazeConfig.getWidth());
+	
+	}
+	
+	@Test
+	public void testHeight(){
+        OrderStub stub = new OrderStub();
+		
+		Factory heightFactory;
+		heightFactory = new MazeFactory(true);
+		heightFactory.order(stub);
+
+		heightFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		mazeConfig.setHeight(10);
+		assertTrue(10 == mazeConfig.getHeight());
+		
+		mazeConfig.setHeight(99);
+		assertTrue(99 == mazeConfig.getHeight());
+	}
+	
+	//fursthest away
+	//start position same regardless where you are
+	//is the position valid
+	
+	@Test
+	public void testEntryExitMaxDistance(){
+		
+        OrderStub stub = new OrderStub();
+		
+		Factory heightFactory;
+		heightFactory = new MazeFactory(true);
+		heightFactory.order(stub);
+
+		heightFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		mazeConfig.setStartingPosition(0, 0);
+		
+		assertTrue (mazeConfig.getMazedists().getMaxDistance() == mazeConfig.getMazedists().getDistance(0,0));
+
+	}
+	
+	@Test
+	public void testValidPosition(){
+		
+        OrderStub stub = new OrderStub();
+		
+		Factory heightFactory;
+		heightFactory = new MazeFactory(true);
+		heightFactory.order(stub);
+
+		heightFactory.waitTillDelivered();
+		 
+		MazeConfiguration mazeConfig = stub.getMazeConfiguration();
+		
+		int row;
+		int col;
+				
+		for (row = 0; row < mazeConfig.getWidth() - 1; row++) {
+			for (col = 0; col < mazeConfig.getHeight() - 1; col++){
+				assertTrue(mazeConfig.isValidPosition(row, col));
+			}
+		}		
+	}
+
+}

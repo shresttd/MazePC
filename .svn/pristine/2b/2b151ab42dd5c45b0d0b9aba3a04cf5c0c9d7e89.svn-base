@@ -1,0 +1,78 @@
+package falstad;
+
+import generation.Distance;
+
+public class Pledge implements RobotDriver{
+	
+	Distance distance ;	
+	int width ;
+	int height ;
+	int pathLength ;
+    
+	Robot robot ;
+	MazeController mazeController ;
+	
+	public Pledge() {
+		pathLength = 0 ;		
+	}
+
+	@Override
+	public void setRobot(Robot r) {
+		this.robot = r;
+	}
+
+	@Override
+	public void setDimensions(int width, int height) {
+		
+		assert (width >= 0);
+		assert (height >= 0);
+		
+		this.width = width;
+		this.height = height;
+	}
+
+	@Override
+	public void setDistance(Distance distance) {
+		
+		assert (null != distance) ;
+		this.distance = distance;
+	}
+
+	@Override
+	public boolean drive2Exit() throws Exception {	
+		if (robot.distanceToObstacle(Robot.Direction.FORWARD) == 0 ) {
+			if (robot.distanceToObstacle(Robot.Direction.LEFT) != 0) {
+				robot.rotate(Robot.Turn.LEFT);
+			}
+			else if (robot.distanceToObstacle(Robot.Direction.RIGHT) != 0) {
+				robot.rotate(Robot.Turn.RIGHT);
+			}
+			else {
+				robot.rotate(Robot.Turn.AROUND);
+			}
+		}
+		robot.move(1, false);
+		
+		return true ;
+	}
+
+	@Override
+	public float getEnergyConsumption() {
+		System.out.println(getPathLength());
+		return BasicRobot.INITIAL_BATTERY_LEVEL - robot.getBatteryLevel();
+	
+	}
+
+	@Override
+	public int getPathLength() {
+		return this.pathLength ;
+	}
+	
+	/**
+	 * Sets the given maze controller to this driver.
+	 * @param controller
+	 */
+	public void setMazeController(MazeController controller) {
+		this.mazeController = controller ; 
+	}
+}

@@ -1,0 +1,93 @@
+package falstad;
+
+import static org.junit.Assert.*;
+
+import java.awt.event.KeyListener;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import falstad.Constants.StateGUI;
+import generation.MazeConfiguration;
+import generation.MazeFactory;
+import generation.OrderStub;
+
+public class WizardTest {
+
+	MazeApplication app ; 
+	KeyListener kl ;
+    Robot robot ; 
+	MazeController controller ;
+	StateGUI state ;
+	MazeFactory factory; 
+	
+	MazeConfiguration mazeConfig ;
+	
+	RobotDriver driver;
+	
+	static final float INITIAL_BATTERY_LEVEL = 2500 ;
+	static final float DISTANCE_SENSING = 1 ;
+	static final float ROTATE_90 = 3 ;
+	static final float MOVE_FORWARD = 5 ;
+	
+	@Before
+	public void setUp() throws Exception {
+		/*app = new MazeApplication() ; 
+		
+		controller = app.getController() ;
+		kl = app.getKeyListerner() ;*/
+		
+		controller = new FakeController() ;
+		controller.init() ;
+		factory = new MazeFactory(true);
+		factory.order(controller) ;
+		factory.waitTillDelivered();
+		
+		/*assert (controller.getState() == StateGUI.STATE_TITLE_BUILDER) ;
+		controller.keyDown('d') ; 			//should set it to DFS
+		assert (controller.getState() == StateGUI.STATE_TITLE_DRIVER) ;
+		controller.keyDown('w') ; 			// should set it to Wizard
+		assert (controller.getState() == StateGUI.STATE_TITLE) ;
+		controller.keyDown('3') ;			// should set it to level 3 */
+		
+		robot = controller.getRobot() ; 
+		robot.setMaze(controller) ;
+		driver = controller.getDriver() ;
+		driver.setRobot(robot) ;		
+		
+		System.out.println("Mazeconfig in test is : " + controller.getMazeConfiguration()) ;
+		System.out.println("Mazecells in test is : " + controller.getMazeConfiguration().getMazecells());
+		System.out.println("MazeDists in test is : " + controller.getMazeConfiguration().getMazedists());
+		mazeConfig = controller.getMazeConfiguration();
+	}
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void testGetEnergyConsumptionAtBeginning() {
+		assertTrue(driver.getEnergyConsumption() == INITIAL_BATTERY_LEVEL) ;
+	}
+	
+	@Test
+	public void testGetPathLengthAtBeginning() {
+		System.out.println("test driver.get pathlength is " + driver.getPathLength());
+		assertTrue(driver.getPathLength() == INITIAL_BATTERY_LEVEL) ;
+	}
+	
+	@Test
+	public void testDrive2Exit() {
+		
+		try {
+			driver.drive2Exit() ;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		assertTrue(controller.getState() == Constants.StateGUI.STATE_FINISH) ;
+		
+	}
+
+}

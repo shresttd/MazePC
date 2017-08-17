@@ -1,0 +1,19 @@
+package falstad;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+public class MazeFileReaderTest extends MazeFileReader{
+
+	public MazeFileReaderTest(String filename) {
+		super(filename);
+		// TODO Auto-generated constructor stub
+	}
+
+	@Test
+	public void test() {
+		fail("Not yet implemented");
+	}
+
+}

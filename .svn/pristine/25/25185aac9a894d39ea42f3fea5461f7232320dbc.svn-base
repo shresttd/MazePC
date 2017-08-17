@@ -1,0 +1,155 @@
+package falstad;
+
+import generation.Distance;
+
+/**
+ * This is a refined wall follower that is able to run around and leave an
+ * obstacle. It picks a random direction as its main direction and applies wall following when it
+ * hits an obstacle. It counts left (-1) and right (+1) turns and when the total becomes zero, it is
+ * able to leave an obstacle following its main direction again. Understanding the wall follower algorithm is a
+ * prerequisite.
+ * @author TJ
+ *
+ */
+public class Pledge implements RobotDriver{
+	
+	Distance distance ;	
+	int width ;
+	int height ;
+	int pathLength ;
+    
+	Robot robot ;
+	MazeController mazeController ;
+	
+	public Pledge() {
+		pathLength = 0 ;		
+	}
+
+	/**
+	 * Assigns a robot platform to the driver. 
+	 * The driver uses a robot to perform, this method provides it with this necessary information.
+	 * @param r robot to operate
+	 */
+	@Override
+	public void setRobot(Robot r) {
+		this.robot = r;
+	}
+
+	/**
+	 * Provides the robot driver with information on the dimensions of the 2D maze
+	 * measured in the number of cells in each direction.
+	 * @param width of the maze
+	 * @param height of the maze
+	 * @precondition 0 <= width, 0 <= height of the maze.
+	 */
+	@Override
+	public void setDimensions(int width, int height) {
+		
+		assert (width >= 0);
+		assert (height >= 0);
+		
+		this.width = width;
+		this.height = height;
+	}
+
+	/**
+	 * Provides the robot driver with information on the distance to the exit.
+	 * Only some drivers such as the wizard rely on this information to find the exit.
+	 * @param distance gives the length of path from current position to the exit.
+	 * @precondition null != distance, a full functional distance object for the current maze.
+	 */
+	@Override
+	public void setDistance(Distance distance) {
+		
+		assert (null != distance) ;
+		this.distance = distance;
+	}
+
+	/**
+	 * Drives the robot towards the exit given it exists and given the robot's energy supply lasts long enough. 
+	 * @return true if driver successfully reaches the exit, false otherwise
+	 * @throws exception if robot stopped due to some problem, e.g. lack of energy
+	 */
+	@Override
+	public boolean drive2Exit() throws Exception {
+		if (robot.hasStopped()) {
+			return false ;
+		}
+		if (robot.isAtExit()) {
+			if (robot.distanceToObstacle(Robot.Direction.RIGHT) == Integer.MAX_VALUE) {
+				robot.rotate(Robot.Turn.RIGHT);
+				this.pathLength ++;
+				robot.move(1, false);
+				return true;
+			}
+			if (robot.distanceToObstacle(Robot.Direction.LEFT) == Integer.MAX_VALUE) {
+				robot.rotate(Robot.Turn.LEFT);
+				this.pathLength ++;
+				robot.move(1, false);
+				return true;
+			}
+			if (robot.distanceToObstacle(Robot.Direction.FORWARD) == Integer.MAX_VALUE) {
+				this.pathLength ++ ; 
+				robot.move(1,  false);
+				return true;
+			}
+		}
+		
+		int anglesTurned = 0;
+		
+		if (robot.distanceToObstacle(Robot.Direction.FORWARD) == 0 ) {
+			if (robot.distanceToObstacle(Robot.Direction.LEFT) != 0) {
+				anglesTurned -= 90;
+			}
+			else if (robot.distanceToObstacle(Robot.Direction.RIGHT) != 0) {
+				robot.rotate(Robot.Turn.RIGHT);
+				anglesTurned += 90 ;
+			}
+			else {
+				robot.rotate(Robot.Turn.AROUND);
+			}
+		}
+		robot.move(1, false);
+
+		if (robot.distanceToObstacle(Robot.Direction.FORWARD) == 0 ) {
+			if (robot.distanceToObstacle(Robot.Direction.LEFT) != 0 && anglesTurned != 0) {
+				robot.rotate(Robot.Turn.LEFT);
+				anglesTurned ++ ;
+				robot.move(1, false);
+			}
+			els
+		}
+		
+		return true ;
+	}
+
+	/**
+	 * Returns the total energy consumption of the journey, i.e.,
+	 * the difference between the robot's initial energy level at
+	 * the starting position and its energy level at the exit position. 
+	 * This is used as a measure of efficiency for a robot driver.
+	 */
+	@Override
+	public float getEnergyConsumption() {
+		return BasicRobot.INITIAL_BATTERY_LEVEL - robot.getBatteryLevel();
+	
+	}
+	
+	/**
+	 * Returns the total length of the journey in number of cells traversed. 
+	 * Being at the initial position counts as 0. 
+	 * This is used as a measure of efficiency for a robot driver.
+	 */
+	@Override
+	public int getPathLength() {
+		return this.pathLength ;
+	}
+	
+	/**
+	 * Sets the given maze controller to this driver.
+	 * @param controller
+	 */
+	public void setMazeController(MazeController controller) {
+		this.mazeController = controller ; 
+	}
+}

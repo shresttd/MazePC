@@ -1,0 +1,124 @@
+package falstad;
+
+import falstad.Constants.StateGUI;
+import generation.CardinalDirection;
+import generation.Cells;
+import generation.Distance;
+import generation.Factory;
+import generation.MazeConfiguration;
+import generation.MazeContainer;
+import generation.MazeFactory;
+import generation.Order;
+import generation.Order.Builder;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+/**
+ * This class extends the MazeController for testing purposes.
+ * So that it ignores anything related to the GUI and redrawing operations.
+ * @author TJ
+ */
+public class FakeController extends MazeController {
+	
+	int skill ;
+	Builder builder ;
+	boolean perfect ;
+	private MazeConfiguration mazeConfig;
+	StateGUI state;
+	int px, py;
+	
+	Robot robot ;
+	RobotDriver driver ;
+	
+	public FakeController() {
+		super() ;
+		this.skill = 1 ;
+		this.builder = Builder.DFS ;
+		this.perfect = false ;
+	//	this.mazeConfig = new MazeContainer() ;
+		System.out.println("mazeConfig in FakeController is : " + this.mazeConfig) ;
+		robot = new BasicRobot() ;
+		robot.setMaze(this);
+		driver = new Wizard() ;
+		driver.setRobot(robot);	
+	}
+	
+	public FakeController(Order.Builder builder, RobotDriver driver, int skill) {
+		super() ;
+		this.skill = skill;
+		this.builder = builder ;
+		this.perfect = false ;
+		//this.mazeConfig = new MazeContainer() ;
+		robot = new BasicRobot() ;
+		robot.setMaze(this);
+		this.driver = driver ;
+		this.driver.setRobot(robot);
+		
+	}
+	
+	public FakeController(Order.Builder builder) {
+		// TODO Auto-generated constructor stub
+		super() ;
+		this.skill = 1 ;
+		this.builder = builder ; 
+		this.perfect = false ;
+		
+	}
+	public FakeController(String filename) {
+		// TODO Auto-generated constructor stub
+		super() ;
+		this.skill = 1 ;
+		this.builder = Builder.DFS ;
+		this.perfect = false ;
+		
+	}
+	
+	@Override
+	public void init() {
+		this.state = StateGUI.STATE_PLAY ;
+	}
+		
+	@Override
+	public void deliver(MazeConfiguration mazeConfig) {
+
+		this.mazeConfig = mazeConfig;
+		int[] start = mazeConfig.getStartingPosition() ;
+
+		setCurrentPosition(start[0],start[1]) ;
+		setCurrentDirection(1, 0) ;
+	}
+
+	@Override
+	public void updateProgress(int percentage) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public boolean keyDown (int key) { 
+		switch (key) {
+		case Event.UP: case 'k': case '8':
+			walk(1);
+			if (isOutside(px,py)) {
+				switchToFinishScreen();
+			}
+			break;
+		case Event.LEFT: case 'h': case '4':
+			rotate(1);
+			break;
+		case Event.RIGHT: case 'l': case '6':
+			// turn right
+			rotate(-1);
+			break;
+		case Event.DOWN: case 'j': case '2':
+			walk(-1);
+			if (isOutside(px,py)) {
+				switchToFinishScreen();
+			}
+			break;	
+		}
+		return true ;
+	}
+}

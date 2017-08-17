@@ -1,0 +1,87 @@
+package falstad;
+
+import generation.CardinalDirection;
+import generation.Distance;
+
+public class Wizard implements RobotDriver{
+	
+	Distance distance ;	
+	int width ;
+	int height ;
+	int pathLength ;
+    
+	Robot robot ;
+	MazeController mazeController ;
+	
+	public Wizard() {
+		pathLength = 0 ;
+	}
+
+	@Override
+	public void setRobot(Robot r) {
+		this.robot = r;
+	}
+
+	@Override
+	public void setDimensions(int width, int height) {		
+		assert (width >= 0);
+		assert (height >= 0);
+		
+		this.width = width;
+		this.height = height;
+	}
+
+	@Override
+	public void setDistance(Distance distance) {
+		assert (null != distance) ; 
+
+		this.distance = distance;
+	}
+
+	@Override
+	public boolean drive2Exit() throws Exception {	
+
+		
+		int[] curPos = robot.getCurrentPosition() ;
+		int[] neighbor = ((BasicRobot) robot).getMazeController().getMazeConfiguration().getNeighborCloserToExit(curPos[0], curPos[1]) ;
+		
+ 		CardinalDirection curDir = robot.getCurrentDirection() ; 
+		CardinalDirection towardNeighbor = neighborCardinalDirection(curPos, neighbor) ;
+
+		while (curDir != towardNeighbor) {
+			robot.rotate(Robot.Turn.LEFT);
+			//curDir = robot.getCurrentDirection() ;
+		}
+		robot.move(1, false);
+		
+		return true; 
+	}
+
+	@Override
+	public float getEnergyConsumption() {
+		System.out.println(getPathLength());
+		return BasicRobot.INITIAL_BATTERY_LEVEL - robot.getBatteryLevel();
+	
+	}
+
+	@Override
+	public int getPathLength() {
+		return this.pathLength ;
+	}
+	
+	/**
+	 * Sets the given maze controller to this driver.
+	 * @param controller
+	 */
+	public void setMazeController(MazeController controller) {
+		this.mazeController = controller ; 
+	}
+	
+	private CardinalDirection neighborCardinalDirection(int[] curPos, int[] neighbor) {
+		int [] neighborDir = new int [2];
+		neighborDir[0] = neighbor[0] - curPos[0] ;
+		neighborDir[1] = neighbor[1] - curPos[1] ;
+		
+		return robot.getCurrentDirection().getDirection(neighborDir[0], neighborDir[1]);
+	}
+}

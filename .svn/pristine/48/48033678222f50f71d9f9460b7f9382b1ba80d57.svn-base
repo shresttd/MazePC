@@ -1,0 +1,228 @@
+package generation;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import generation.MazeBuilderEller;
+import generation.Cells;
+import generation.MazeBuilder;
+import generation.Distance;
+
+
+/** 
+ * 
+ * I have tried multiple times to make this MazeBuilderEllerTest work. However, I keep getting nullpointer error on my grid
+ * So I cannot work on it and even access it.
+ * If it were to work, I planned on testing from my MazeBuilderEller class:
+ * I would want to test mergeLastRow(), mergeHorizontally(), and mergeVertically()
+ * For mergeVertically(), I'd test that it is always merging when there exists a set with only one value in it
+ * I'd also test that for every set, at least one value is being merged into the next row
+ * For mergeHorizontally(), I'd test if values are merged if they are already in the same set - they should be merged at all
+ * Otherwise, I'd test if values are merged at random if they are at they are not in the same set.
+ * I'd test that if two values are merged horizontally into the same set, all other values in the merged sets are merged as well.
+ * For mergeLastRow(), I'd test that all the values are in the same set by the end.
+ * 
+ * None of the methods below work.
+ * 
+ * @author TJShrestha
+ *
+ */
+public class MazeBuilderEllerTest extends MazeBuilderEller {
+    
+	 	
+	MazeBuilderEller testEller; 	
+	
+    public void setUp(int width, int height) {
+    	testEller = new MazeBuilderEller();
+    	
+    	testEller.width = width;
+    	testEller.height = height;
+    	//testEller.grid = new int[testEller.width][testEller.height];
+    }
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+	   
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+	
+	@Test
+	public void testHasExit() {
+
+	    //testEller.cells = new Cells(w, h);
+	    testEller.cells.initialize(); 
+	    
+	    
+	    if (testEller.cells.hasWall(0, 0, CardinalDirection.East )) {
+	    	System.out.println("Has a wall here");
+	    }
+	    Wall eastWall = new Wall (0,0,CardinalDirection.East);
+	    
+	    testEller.cells.deleteWall(eastWall);
+	    
+	    if (testEller.cells.hasWall(0, 0, CardinalDirection.East )) {
+	    	System.out.println("Wall still here");
+	    }
+	    
+	    if (testEller.cells.hasNoWall(0, 0, CardinalDirection.East ) ) {
+	    	System.out.println("Wall is not here anymore");
+	    }
+	    
+        //testEller.dists = new Distance(w, h) ;
+        
+	    testEller.dists.getDists();
+	    
+	    int distance = testEller.dists.getDistance(0, 0);
+	    
+	    System.out.println("distance" + distance);
+	    
+		//testEller.run();
+        testEller.generatePathways();
+		System.out.println("past run");
+		
+		
+		final int[] remote = testEller.dists.computeDistances(testEller.cells) ;
+		System.out.println("remote: " + remote);
+		final int[] startPosition = testEller.dists.getStartPosition();
+	
+		testEller.cells.setExitPosition(remote[0], remote[1]);	  
+      //  testEller.dists.computeDistances(testEller.cells);
+
+		
+        int count = 0;
+        int elseCount = 0;
+		for (int y = 0 ; y < height - 1; y++ ) {
+			for (int x = 0 ; x < width - 1; x++ ) {
+				if (testEller.cells.hasNoWall(x, y, CardinalDirection.East) ) {
+					count ++;
+				
+				}else if (testEller.cells.hasWall(x, y, CardinalDirection.East) ) {
+				    elseCount ++ ;
+				}
+			}
+		}
+		System.out.println("Count : " + count);
+		System.out.println("elseCount : " + elseCount);
+
+	 
+		int INFINITY = Integer.MAX_VALUE;
+		
+		assertTrue(INFINITY > testEller.dists.getDistance(startPosition[0], startPosition[1]) ) ;
+	}
+	
+	@Test
+	public void testExitFromEverySpot() {
+		
+	    MazeBuilder testEller = new MazeBuilderEller();
+		
+	    Cells testCells = testEller.cells;
+	    
+        Distance testDistance = testEller.dists;
+
+	    testCells.initialize();
+	    
+	    testEller.generate();
+	}
+	//also test for expected exception errors!
+	
+	@Test
+	public void testWidth() { 
+		
+	    MazeBuilderEller testEller = new MazeBuilderEller();
+
+	    int w = 10;
+	    int h = 10;
+	    
+	    testEller.cells = new Cells(w, h);
+	    testEller.cells.initialize();
+        
+	    
+		testEller.generatePathways(); 
+		
+		
+	    testEller.dists = new Distance(w, h); 
+
+	    //testEller.getWidth();
+
+		
+		//int value = testEller.grid[2][3];
+		
+		//System.out.println(value);
+		
+		assertTrue (10 == testEller.width);
+	}
+	
+	@Test
+	public void testHeight() {
+	    MazeBuilderEller testEller = new MazeBuilderEller();
+
+	    int w = 10;
+	    int h = 10;
+	    
+	    testEller.cells = new Cells(w, h);
+	    testEller.cells.initialize();
+	    	    
+
+		testEller.generatePathways();
+		
+		assertTrue (10 == testEller.height);
+	}
+	
+	/**
+	 * Checks if all values are in the same set in the last row
+	 */
+	@Test
+	public void testLastRowSameSet() {
+		
+		MazeBuilderEller testEller = new MazeBuilderEller();
+        
+		int width = 4;
+		int height = 4;
+		int value = 1;
+		
+		setUp(width, height);
+
+		for (int y = 0; y < height - 1; y ++) { 
+			for (int x = 0; x < width - 1; x ++) {
+				//testEller.grid[x][y] = value;
+				value++; 
+			}
+		}
+		
+		
+		int y = height - 1;
+		
+		for (int x = 0; x < width - 1; x ++) {
+			//testEller.mergeLastRow(testEller.grid, x, y);
+			
+		}
+
+		//System.out.println("grid" + testEller.grid[3][4]);
+		
+				
+		for (int x = 0; x < width - 1; x ++ ) {
+			//assertTrue(testEller.grid[x][y] == testEller.grid[width-1][y]);
+		}
+	}
+	
+	
+	
+	
+	
+	
+
+}

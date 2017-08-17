@@ -1,0 +1,828 @@
+package generation;
+
+import java.awt.List;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
+public class MazeBuilderEller extends MazeBuilder implements Runnable {
+	                          
+	public MazeBuilderEller() {
+		// TODO Auto-generated constructor stub
+		super();
+		System.out.println("MazeBuilderPrim uses Eller's algorithm to generate maze.");
+	}
+	
+	public MazeBuilderEller(boolean det) {
+		super(det);
+		System.out.println("MazeBuilderPrim uses Eller's algorithm to generate maze.");
+	}
+
+
+    /////////////////////////////\]\\\\\\\\\\\\\\\\\\\\\\////////////////\\\\\\\\\\\\\\\\\\\\//////////////////\\\\\\\\\\\\\\\\\////////\\\\\\\\\
+    @Override
+    protected void generatePathways() {
+    	int [][]grid = new int [width][height];
+    	int x;
+    	int y;
+    	int value = 1;
+    	
+        for (y = 0; y < height; y ++) {
+        	for (x = 0; x < width; x ++){
+        		grid[x][y] = value;
+        		value++;
+        	}
+        }
+        
+    	for (y = 0; y < height - 1; y ++) {
+    		
+        	for (x = 0; x < width - 1; x++) {
+
+                mergeHorizontally(grid, x,y);
+                
+                
+                int count = countValues(grid, x, y);
+            	mergeVertically(grid, x,y, count);
+        		
+        	}
+        	x = width - 1;
+        	int count = countValues(grid,x,y);
+        	mergeVertically(grid, x, y, count);
+    	}
+    	
+    	y = height - 1;
+    	
+    	for (x = 0; x < width - 1; x ++) {
+
+    		mergeLastRow(grid, x, y);
+    		
+
+    	}
+ 
+    	
+    }
+    
+	private void mergeHorizontally(int [][] grid, int x, int y){
+		
+		if (grid[x+1][y] != grid[x][y]){
+			
+			boolean coin = flipCoin();
+			if (coin) {
+		
+				int temp = grid[x+1][y];
+				int curVal = grid[x][y];
+								
+				for (int col = 0; col < width; col ++) {
+					if (grid[col][y] == temp) {
+						grid[col][y] = curVal;				
+					}
+				}
+				
+				Wall eastWall = new Wall(x, y, CardinalDirection.East);
+				cells.deleteWall(eastWall);
+			}
+		}
+	}
+	
+	private void mergeLastRow (int [][] grid, int x, int y) {
+		if (grid[x+1][y] != grid[x][y]){
+			
+			int temp = grid[x+1][y];
+			int curVal = grid[x][y];
+							
+			for (int col = 0; col < width; col ++) {
+				if (grid[col][y] == temp) {
+					grid[col][y] = curVal;				
+				}
+			}
+			
+			Wall eastWall = new Wall(x, y, CardinalDirection.East);
+			cells.deleteWall(eastWall);
+			
+		}
+	}
+	
+	private void mergeVertically(int [][] grid, int x, int y, int count ){
+		
+
+		if (count == 1) {
+			grid[x][y+1] = grid[x][y];
+			Wall southWall = new Wall(x, y, CardinalDirection.South);
+			cells.deleteWall(southWall);
+		}
+		else {
+			
+			int numberOfVerticalMerges = 0;
+			for (int check = 0; check < width; check ++) {
+				if (grid[check][y] == grid[x][y]) {
+					if (grid[check][y+1] == grid[check][y]) {
+						numberOfVerticalMerges++;
+					}
+				}
+			}
+			
+			if (numberOfVerticalMerges == 0) {
+		    	ArrayList<Integer> newList = new ArrayList<Integer>();
+		    	for (int col = 0; col < width ; col++) {
+		    		if (grid[col][y] == grid[x][y]) {
+			    	    newList.add(col);
+			    	}
+		    	}
+			
+				Random random = new Random();
+				int randomIndex = random.nextInt(newList.size());
+				
+				int merge = newList.get(randomIndex);
+				
+				grid[merge][y + 1] = grid[merge][y];
+				Wall mergeSouthWall = new Wall(merge, y, CardinalDirection.South);
+				cells.deleteWall(mergeSouthWall);
+			}
+			else { 
+				
+				boolean coin = flipCoin();
+				
+				if (coin) {
+				    grid[x][y+1] = grid[x][y];
+				    Wall southWall = new Wall(x, y, CardinalDirection.South);
+				    cells.deleteWall(southWall);
+				}
+			}
+		}
+		
+	}	
+	
+	private int countValues(int grid [][], int x, int y) {
+		int curVal = grid[x][y];
+		int count = 0;
+		
+		for (int col = 0; col < width; col ++) {
+			if (grid[col][y] == curVal) {
+				count ++;
+			}
+			
+		}	
+		return count;
+	}
+	
+	
+	
+	private boolean flipCoin(){
+		
+		Random random = new Random();
+			
+		//random.setSeed(1);
+					
+	    boolean coin = random.nextBoolean();
+	   
+	    return coin;
+	}
+
+/////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\/////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\//////////////////////\\\\\\\\\\\\\\\//\\\   
+    //@Override
+    protected void generatePathwaysEntranceExitBlocked(){
+    	int [][]grid = new int[width][height];
+    	
+    	int x;
+    	int y;
+    	int value = 1;
+    	
+    	//For every block in the grid, give it a value
+    	
+    	for (x = 0; x < width; x++) {
+    		for (y = 0; y < height - 1; y++ ) {
+    			grid[x][y] = value;
+    			value ++;
+    		}    		
+    	}
+    	
+        //for every column....
+    	
+    	for (x = 0; x < width - 1; x++) {
+    		
+    		//for every row in the column...
+    		for (y = 0; y < height - 1; y ++ ) {
+                
+    			//if th
+    			if (grid[x+1][y] != grid[x][y]) {
+    		    	boolean mergeHorizontally = flipCoin();
+    			
+    		        if (mergeHorizontally) {
+    		        	
+    		        	int nextValue = grid[x+1][y];
+    		        	grid[x+1][y] = grid[x][y];
+    		        	for (int col = 0; col < width; col ++) {
+    		        		if (grid[col][y] == nextValue) {
+    		        			grid[col][y] = grid[x][y];
+    		        		}
+    		        	}
+    			        Wall eastWall = new Wall (x, y, CardinalDirection.East);
+    			        cells.deleteWall(eastWall);
+    		        }
+    			}
+    			
+    			int count = 0;
+    			int col;
+    			
+    			for (col = 0; col < height; col++) {
+    				if (grid[x][y] == grid[x][col]) {
+    					count++;
+    				}
+    			}
+    			
+    			if (count == 1) {
+    				grid[x][y+1] = grid[x][y];
+    				Wall southWall = new Wall (x, y, CardinalDirection.South);
+	    			cells.deleteWall(southWall);
+    			}
+    		
+    		    boolean mergeVertically = flipCoin(); 
+    		    if (mergeVertically) {
+    		    	grid[x][y+1] = grid[x][y];
+	    			Wall southWall = new Wall (x, y, CardinalDirection.South);
+	    			cells.deleteWall(southWall);
+    			
+    		    }   
+    		}
+    		    
+    		y = height - 1;
+    		
+    		if (grid[x+1][y] != grid[x][y]) {
+    		
+				boolean mergeHorizontally = flipCoin();
+				if(mergeHorizontally) {
+					
+				
+		        	int nextValue = grid[x+1][y];
+		        	
+		        	grid[x+1][y] = grid[x][y];
+		        	for (int col = 0; col < width; col ++) {
+		        		if (grid[col][y] == nextValue) {
+		        			grid[col][y] = grid[x][y];
+		        		}
+		        	}
+					//grid[x+1][y] = grid[x][y];
+				    Wall eastWall = new Wall (x, y, CardinalDirection.East);
+			    	cells.deleteWall(eastWall);
+				}
+    		}
+    	}
+    	
+    	x = width - 1;
+    	for (y = 0; y < height - 1; y++) {
+    		
+    		int col;
+    		int count = 0;
+			for (col = 0; col < height; col++) {
+				if (grid[x][y] == grid[x][col]) {
+					count++;
+				}
+			}
+			
+			if (count == 1) {
+				grid[x][y+1] = grid[x][y];
+				Wall southWall = new Wall (x, y, CardinalDirection.South);
+    			cells.deleteWall(southWall);
+			}
+			
+    		boolean mergeVertically = flipCoin();
+    		if (mergeVertically) {
+    			grid[x][y + 1] = grid[x][y];
+			    Wall southWall = new Wall (x, y, CardinalDirection.South);
+			    cells.deleteWall(southWall);
+    		}
+    	}
+    	
+    }
+    
+    //@Override
+    protected void generatePathwaysWorks(){
+    	int [][]grid = new int[width][height];
+    	
+    	int x;
+    	int y;
+    	
+    	for (x = 0; x < width - 1; x++) {
+    	
+    		for (y = 0; y < height - 1; y ++ ) {
+
+    			
+    			boolean mergeHorizontally = flipCoin();
+    		    if (mergeHorizontally) {
+    			Wall eastWall = new Wall (x, y, CardinalDirection.East);
+    			cells.deleteWall(eastWall);
+    		    }
+    			
+    	
+    		    boolean mergeVertically = flipCoin(); 
+    		    if (mergeVertically) {
+    			Wall southWall = new Wall (x, y, CardinalDirection.South);
+    			cells.deleteWall(southWall);
+    			
+    		    }   
+    		}
+    		    
+    		y = height - 1;
+    		
+    		boolean mergeHorizontally = flipCoin();
+    		if(mergeHorizontally) {
+    		    Wall eastWall = new Wall (x, y, CardinalDirection.East);
+    	    	cells.deleteWall(eastWall);
+    		}
+    	}
+    	
+    	x = width - 1;
+    	for (y = 0; y < height - 1; y++) {
+    		
+    		boolean mergeVertically = flipCoin();
+    		if (mergeVertically) {
+			    Wall southWall = new Wall (x, y, CardinalDirection.South);
+			    cells.deleteWall(southWall);
+    		}
+    	}
+    	
+    }
+    
+    
+    //@Override
+    protected void generatePathwaysTrial(){
+    	HashSet [][]grid = new HashSet[width][height];
+    	
+    	
+    	int x;
+    	int y;
+    	
+    	x = 0;
+    	for (y = 0; y < height; y ++) {
+    		grid[x][y] = new HashSet();
+    	}
+    	
+    	for (x = 0; x < width - 1; x++) {
+    	    
+    		
+    		for (y = 0; y < height - 1; y ++ ) {
+    			
+    			if (grid[x][y] == null) {
+    				grid[x][y] = new HashSet();
+    			}
+
+    			if (grid[x][y] != grid[x+1][y]) {
+    			    boolean mergeHorizontally = flipCoin();
+    		        if (mergeHorizontally) {
+    		        	
+    		        	grid[x][y].add(grid[x][y+1]);
+    			        Wall eastWall = new Wall (x, y, CardinalDirection.East);
+    		        	cells.deleteWall(eastWall);
+    		        }
+    			}
+    			
+    	        if (grid[x][y].size() == 1){
+    	        	grid[x][y].add(grid[x+1][y]);
+    	        	Wall southWall = new Wall ( x, y, CardinalDirection.South);
+    	        }
+    	        else{
+    		    boolean mergeVertically = flipCoin(); 
+    		    if (mergeVertically) {
+    		    	grid[x][y].add(grid[x+1][y]);
+    		    	Wall southWall = new Wall (x, y, CardinalDirection.South);
+    		    	cells.deleteWall(southWall);
+    		    }
+    		    }   
+    		}
+    		    
+    		y = height - 1;
+    		
+    		if (grid[x][y] == null) {
+    			grid[x][y] = new HashSet();
+    		}
+    		
+    	    boolean mergeHorizontally = flipCoin();
+    	    if(mergeHorizontally) {
+    	    	grid[x][y].add(grid[x][y+1]);
+    		    Wall eastWall = new Wall (x, y, CardinalDirection.East);
+    	    	cells.deleteWall(eastWall);
+    	    	}
+    		}	
+    	
+
+    	
+    	x = width - 1;
+    	for (y = 0; y < height - 1; y++) {
+    		
+    		if (grid[x][y] == null) {
+    			grid[x][y] = new HashSet();
+    		}
+    		
+    		if (grid[x][y].size() == 1) {
+		    	grid[x][y].add(grid[x+1][y]);
+
+    			Wall southWall = new Wall (x, y, CardinalDirection.South);
+    			cells.deleteWall(southWall);
+    		}
+    		
+    		else{
+    		boolean mergeVertically = flipCoin();
+    		if (mergeVertically) {
+		    	grid[x][y].add(grid[x+1][y]);
+
+			    Wall southWall = new Wall (x, y, CardinalDirection.South);
+			    cells.deleteWall(southWall);
+    		}
+    		}
+    	}
+    	
+    }
+	//@Override
+	protected void generatePathways1() {
+		int [][] grid = new int[height][width];
+		
+		int y;
+		int x;
+		int parent = 1;
+		
+		for (y = height - 1; y >= 0; y --) {
+			for (x = 0; x < width; x ++) {
+				grid[y][x] = parent;
+				parent++;
+			}
+		}
+		
+		for (y = height - 1; y >= 0; y --) {
+			for (x = 0; x < width - 1; x ++){
+	
+				boolean mergeHorizontally = flipCoin();
+
+				if (mergeHorizontally == true) {
+				        
+				    Wall eastWall = new Wall (x, y, CardinalDirection.East);
+			    	cells.deleteWall(eastWall);
+				}
+			}
+		}
+		
+		for (y = height - 1; y > 0 ; y --) {
+			
+			for (x = 0; x < width; x ++) {
+                
+				try{
+				    if (grid[y][x-1] != grid[y][x] && grid[y][x+1] != grid[y][x]){
+					    Wall northWall = new Wall (x, y, CardinalDirection.North);
+				    	cells.deleteWall(northWall);
+				    }else{
+				
+				        boolean mergeVertically = flipCoin();
+				
+			            if (mergeVertically == true) {
+					        			        		
+				            Wall northWall = new Wall (x, y, CardinalDirection.North);
+				            cells.deleteWall(northWall);
+			            }
+				    }
+				    
+				}catch(Exception ArrayIndexOutOfBoundsException) {}
+
+			}
+		}
+	}
+	
+	
+	//@Override
+    protected void generatePathways2() {
+		
+		int row = 0;
+		int col = 0;
+		
+		Wall eastWall = new Wall(row, col, CardinalDirection.East);
+		Wall southWall = new Wall (width-1, col, CardinalDirection.South);
+		Wall westWall = new Wall(width - 1, height -1, CardinalDirection.West);
+		Wall northWall = new Wall(row, height - 1, CardinalDirection.North);
+		
+		cells.deleteWall(westWall);
+		
+		cells.deleteWall(eastWall);
+		cells.deleteWall(southWall);
+		
+		cells.deleteWall(northWall);
+		
+	}
+	
+	/*@Override
+	protected void generatePathways() {
+		MazeSet [][] grid = new MazeSet[width][height];
+		
+		int row;
+		int col;
+		int parent = 1;
+		
+		for (row = 0; row < width; row ++){
+			for (col = 0; col < height; col++) {
+				grid[row][col] = new MazeSet(parent);
+				parent++;
+				grid[row][col].incrementCount();
+			}
+		}
+		
+		for (row = 0; row < width - 1; row ++) {
+			for (col = 0; col < height; col ++){
+				
+				try{
+			        int curVal = grid[row][col].getValue();
+			        int nextVal = grid[row][col+1].getValue();
+			    
+			        if (curVal != nextVal ) {
+			        	
+				    	boolean mergeHorizontally = flipCoin();
+
+				        if (mergeHorizontally == true) {
+				    	
+				            grid[row][col+1] = grid[row][col];
+				            grid[row][col].incrementCount();
+				        
+				            Wall eastWall = new Wall (row, col, CardinalDirection.East);
+			    	        cells.deleteWall(eastWall);
+				        }
+			        }
+				}catch (Exception ArrayOutOfBounds){
+					
+				}
+			}
+			
+			
+			
+		}
+		
+		for (row = 0; row < width; row ++) {
+			
+			for (col = 0; col < height - 1; col ++) {
+                
+				try{
+					
+				
+                    int curCount = grid[row][col].getCount();	
+                               
+                    
+                    if (curCount == row+1) {
+                        
+                    	grid[row+1][col] = grid[row][col];
+                    	
+                    	Wall southWall = new Wall (row, col, CardinalDirection.South);
+                    	cells.deleteWall(southWall);
+                    
+                    }else{
+                    	
+				        boolean mergeVertically = flipCoin();
+				
+			        	if (mergeVertically == true) {
+					        
+			        		grid[row+1][col] = grid[row][col];
+			        		
+				        	Wall southWall = new Wall (row, col, CardinalDirection.South);
+				            cells.deleteWall(southWall);
+			        	}
+                    }
+			    	
+				
+				}catch (Exception ArrayIndexOutOfBounds){}
+				
+			}
+		}
+	}*/
+	/*@Override
+	protected void generatePathways() {
+		
+		int [][]grid = new int [width][height];
+		
+		int parent = 1;
+		int row = 0;		
+		int col = 0;
+		
+		for (row = 0; row < width; row ++) {
+			for (col = 0; col < height; col ++ ){
+				grid[row][col] = parent;
+				parent++;
+			}
+		}
+
+		for (row = 0; row < width - 1; row++) {
+			for (col = 0; col < height - 1; col++ ) {
+							
+					int mergeHorizontally = flipCoin();
+			    
+			        switch (mergeHorizontally){
+			        case 0: {
+			    	    grid[row][col + 1] = grid[row][col];
+			    	
+			        	Wall curWall = new Wall(row, col, CardinalDirection.East);
+			        	cells.deleteWall(curWall);			    	
+			        }
+			        case 1: ;
+			        }
+	
+				
+			    int mergeVertically = flipCoin();
+			    
+			    switch(mergeVertically){
+			    case 0: {
+			    	grid[row + 1][col] = grid[row][col];
+			    	
+			    	Wall curWall = new Wall(row, col, CardinalDirection.South);
+			    	cells.deleteWall(curWall);
+			    }
+			    case 1: ;
+			    }
+			}
+				
+			col = height - 1;
+
+			grid[row + 1][col] = grid[row][col];
+		    Wall curWall = new Wall(row, col, CardinalDirection.South);
+		    cells.deleteWall(curWall);
+		
+		}
+				
+		row = width - 1;
+		col = 0;
+		
+		for (col = 0; col < height - 1; col ++) {
+			
+		    grid[row][col + 1] = grid[row][col];
+	        Wall curWall = new Wall(row, col, CardinalDirection.East);
+	        cells.deleteWall(curWall);	
+		}
+	}*/
+	
+	/*@Override
+	protected void generatePathways() {  
+		
+		int [][] grid = new int [width][height];
+		
+		int row = 0;
+		int parent = 1;
+		
+		int column = 0;
+		
+		int count = 0;
+		
+		for (row = 0; row < width; row++){
+			
+			if (row == width - 1){
+				
+				
+				
+			}else{
+			
+			for (column = 0; column < height - 1; column++){
+				
+				if (grid[row][column] == 0) {
+					grid[row][column] = parent;
+					parent++;
+				}
+				
+				boolean mergeHorizontal = flipCoin();
+				if (mergeHorizontal == true){
+					grid[row][column + 1] = grid[row][column];
+					
+					for (int col = 0; col < width; col++){}
+					Wall horizontalWall = new Wall(row, column, CardinalDirection.East);
+					cells.deleteWall(horizontalWall);
+					
+				}
+				
+			}
+			}
+		}
+		
+		while (row < width - 2){
+			
+			/*for (column = 0; column < height - 1; column++){
+				
+			
+				Wall horizontalWall = new Wall(row, column, CardinalDirection.East);
+				Wall verticalWall = new Wall (row, column, CardinalDirection.South);
+				
+				cells.addWall(horizontalWall, true);
+				cells.addWall(verticalWall, true);
+				
+			}
+			
+
+			for (column = 0; column < height - 1; column++ ){
+				if (grid[row][column] == 0) {                  //meaning if that spot is not empty
+					grid[row][column] = parent;                 //assign it to a new set
+					parent++;
+				}
+			}
+			
+			//HashMap<Integer, ArrayList<Integer>> countMap = new HashMap<Integer, ArrayList<Integer>>();
+
+			for (column = 0; column < height - 1; column++){           //initialize first row
+				
+				boolean mergeHorizontal = flipCoin();
+
+				if (mergeHorizontal == true){
+					
+					Wall horizontalWall = new Wall(column, row, CardinalDirection.East);
+
+					if (grid[row][column + 1] != grid[row][column]) {    //if not in same set already
+					    grid[row][column + 1] = grid[row][column];   		//merge
+					    
+					        for (int col = 0; col < height - 1; col++)       //change everything else of the same set to this set. 
+					        	grid[row][col] = grid[row][column];
+					        
+					    cells.deleteWall(horizontalWall);
+					} 
+				}
+				
+				boolean mergeVertically = flipCoin();             
+				
+				//if (occurences == 1) {
+			      //  grid[row + 1][column] = grid[row][column];
+		    	    //cells.deleteWall(verticalWall);
+
+				if (mergeVertically == true){
+					Wall verticalWall =  new Wall(column, row, CardinalDirection.South);
+
+					grid[row + 1][column] = grid[row][column];           //merge downwards
+				    cells.deleteWall(verticalWall);
+				    }
+				
+				
+				
+			//	ArrayList<Integer> columnList = new ArrayList<>();
+				
+			//	columnList.add(column);
+				
+			//	countMap.put(grid[row][column], columnList);
+			}
+			
+		    
+			/*for (column = 0; column < height - 1; column ++){
+		        
+				
+				//int occurences = countMap.get(grid[row][column]).size();			//NEED CASE WHERE ITS THE ONLY ONE IN THE SET
+				
+				boolean mergeVertically = flipCoin();             
+				
+				//if (occurences == 1) {
+			      //  grid[row + 1][column] = grid[row][column];
+		    	    //cells.deleteWall(verticalWall);
+
+				if (mergeVertically == true){
+					Wall verticalWall =  new Wall(column, row, CardinalDirection.South);
+
+					grid[row + 1][column] = grid[row][column];           //merge downwards
+				    cells.deleteWall(verticalWall);
+				    }
+			    }
+		    
+			row ++;
+	
+		}	
+		
+		//row == height - 1; aka last row. MIGHT HAVE ISSUE WHERE SECOND LAST ROW DOESN'T VERTICALLY MERGE INTO LAST ROW!!
+		
+		
+		for (column = 0; column < height - 1; column++){
+			cells.addWall(horizontalWall, true);
+		}
+        
+		System.out.println("outside?");
+		
+		System.out.println("");
+		
+		row++;
+		
+		for (column = 0; column < height - 2; column++){
+			
+			System.out.println("Where in the world");
+			
+			System.out.println("row: " + row + " column: " + column);
+			
+		    if ( grid[row][column + 1] != grid[row][column]) {
+		    	grid[row][column + 1] = grid[row][column];                       //merged
+		    	
+		    	System.out.println("inside if statement");
+
+		    	
+				Wall horizontalWall = new Wall(row, column, CardinalDirection.East);
+				
+				System.out.println("after new Wall");
+				System.out.println("column " + column);
+
+				cells.deleteWall(horizontalWall);
+		    	
+		    	System.out.println("after deleted wall");
+		    	
+		    }
+		}
+	}*/
+	
+
+
+	
+	
+
+}

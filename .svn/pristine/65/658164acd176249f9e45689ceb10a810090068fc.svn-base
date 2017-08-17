@@ -1,0 +1,96 @@
+package generation;
+
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import generation.MazeBuilderEller;
+import generation.Cells;
+import generation.MazeBuilder;
+
+
+public class MazeBuilderEllerTest extends MazeBuilderEller {
+    
+	static Factory[] testFactory;
+	 
+	Thread testEllerThread;
+	
+	MazeConfiguration testConfiguration = new MazeContainer();
+	
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		
+		//testFactory = new Factory[7];
+		
+		//testFactory[0] = new MazeFactory(true);
+		//testFactory[0].waitTillDelivered();
+	}
+
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+	
+	@Test
+	public void testHasExit() {
+
+	    MazeBuilder testEller = new MazeBuilderEller();
+
+	    Cells testCells = testEller.cells;
+	    testCells.initialize();
+        System.out.println("here");
+
+        Distance testDistance = testEller.dists;
+
+		testEller.generatePathways(); 
+		final int[] remote = testDistance.computeDistances(testCells) ;
+
+		final int[] pos = testDistance.getStartPosition();
+		startx = pos[0] ;
+		starty = pos[1] ;
+
+		// make exit position at true exit in the cells data structure
+		testCells.setExitPosition(remote[0], remote[1]);	    
+	
+	   
+		MazeConfiguration mazeConfig = new MazeContainer();
+		mazeConfig.setHeight(25);
+		mazeConfig.setWidth(25);
+		mazeConfig.setMazecells(testCells);
+		mazeConfig.setMazedists(testDistance);
+		mazeConfig.setStartingPosition(0, 0);
+		order.deliver(mazeConfig);
+
+	    int startPosition [] = testDistance.getStartPosition();
+        
+	    int INFINITY = Integer.MAX_VALUE;
+		
+		assertTrue(INFINITY > testDistance.getDistance(startPosition[0], startPosition[1]) ) ;
+	}
+	
+	@Test
+	public void testExitFromEverySpot() {
+		
+	    MazeBuilder testEller = new MazeBuilderEller();
+		
+	    Cells testCells = testEller.cells;
+	    
+        Distance testDistance = testEller.dists;
+
+	    testCells.initialize();
+	    
+	    testEller.generate();
+	}
+	//also test for expected exception errors!
+
+}

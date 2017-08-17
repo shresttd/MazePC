@@ -1,0 +1,137 @@
+/**
+ * 
+ */
+package generation;
+
+import falstad.MazeController;
+
+/**
+ * @author TJShrestha
+ *
+ */
+public class OrderStub implements Order{
+    
+	int skillStub = 9;
+	
+	Builder builderStub = Builder.Eller;
+	
+	boolean perfectStub = false;
+	
+	MazeConfiguration mazeConfigStub;
+
+	int px, py, dx, dy, viewdx, viewdy, walkStep, angle;
+	
+	/**
+	 * 
+	 */
+	public OrderStub() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public int getSkillLevel() {
+		// TODO Auto-generated method stub
+		return skillStub;
+	}
+
+	@Override
+	public Builder getBuilder() {
+		// TODO Auto-generated method stub
+		return builderStub;
+	}
+
+	@Override
+	public boolean isPerfect() {
+		// TODO Auto-generated method stub
+		return perfectStub;
+	}
+
+	@Override
+	public void deliver(MazeConfiguration mazeConfig) {
+		/*
+		// TODO Auto-generated method stub
+		mazeConfig = setMazeConfig();
+		
+		if (Cells.deepdebugWall)
+		{   // for debugging: dump the sequence of all deleted walls to a log file
+			// This reveals how the maze was generated
+			mazeConfig.getMazecells().saveLogFile(Cells.deepedebugWallFileName);
+		}
+				
+		boolean showMaze = false ;
+		boolean showSolution = false ;
+		boolean mapMode = false;
+
+		Cells seenCellsStub = new Cells(mazeConfig.getWidth()+1,mazeConfig.getHeight()+1) ;
+
+		int[] start = mazeConfig.getStartingPosition() ;
+		
+		setCurrentPosition(start[0],start[1]) ;
+		
+		setCurrentDirection(1, 0) ; // east direction
+		
+		viewdx = dx<<16; 
+		viewdy = dy<<16;
+		
+		angle = 0; // angle matches with east direction, hidden consistency constraint!
+		
+		walkStep = 0; // counts incremental steps during move/rotate operation
+		
+		// update screens for playing state
+		//switchToPlayingScreen();
+		 * */
+		
+		 this.mazeConfigStub = mazeConfig;
+		
+	}
+
+	@Override
+	public void updateProgress(int percentage) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public MazeConfiguration getMazeConfiguration() {
+		return this.mazeConfigStub;
+	}
+	private MazeConfiguration setMazeConfig(){
+		
+		int widthStub = 10;
+		int heightStub = 10;
+		
+		mazeConfigStub = new MazeContainer();
+		
+		Cells cellsStub = new Cells(widthStub, heightStub);
+		Distance distStub = new Distance(widthStub, heightStub);
+		
+		mazeConfigStub.setWidth(widthStub);
+		mazeConfigStub.setHeight(heightStub);
+		mazeConfigStub.setMazecells(cellsStub);
+		mazeConfigStub.setMazedists(distStub);
+		mazeConfigStub.setStartingPosition(0, 0);
+		
+		return mazeConfigStub;
+
+	}
+	
+	protected void setCurrentPosition(int x, int y)
+	{
+		px = x ;
+		py = y ;
+	}
+	private void setCurrentDirection(int x, int y)
+	{
+		dx = x ;
+		dy = y ;
+	}
+	protected int[] getCurrentPosition() {
+		int[] result = new int[2];
+		result[0] = px;
+		result[1] = py;
+		return result;
+	}
+	protected CardinalDirection getCurrentDirection() {
+		return CardinalDirection.getDirection(dx, dy);
+	}
+
+}

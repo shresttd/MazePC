@@ -1,0 +1,282 @@
+package falstad;
+
+import java.awt.Event;
+
+import generation.CardinalDirection;
+
+public class BasicRobot implements Robot {
+	
+	MazeController mazeController ;
+	float batteryLevel ;
+	
+	static final float INITIAL_BATTERY_LEVEL = 2500 ;
+    
+	static final float DISTANCE_SENSING = 1 ;
+	static final float ROTATE_90 = 3 ;
+	static final float MOVE_FORWARD = 5 ;
+	
+	int pathLength ;
+	
+	boolean isDead = false ;
+	
+	public BasicRobot() {
+		// TODO Auto-generated constructor stub
+		this.batteryLevel = INITIAL_BATTERY_LEVEL ;
+		this.pathLength = 0 ;
+	}
+
+	@Override
+	
+	public void rotate(Turn turn) {
+		// TODO Auto-generated method stub
+				
+		if ( this.batteryLevel <= 0 ) {
+			return ;
+		}
+		
+		switch (turn) {
+		case LEFT : {
+			mazeController.keyDown(Event.LEFT) ;
+			
+			batteryLevel -= ROTATE_90 ;
+			setBatteryToZero() ;
+
+		}
+		case RIGHT : { 
+			mazeController.keyDown(Event.RIGHT) ;
+			
+			batteryLevel -= ROTATE_90 ;
+			setBatteryToZero() ;
+		}
+		
+		case AROUND : { 
+			mazeController.keyDown(Event.RIGHT) ;
+			mazeController.keyDown(Event.RIGHT) ;
+			
+			batteryLevel -= ROTATE_90 * 2;
+			setBatteryToZero() ;
+
+		}
+		default : {
+			throw new RuntimeException("Inconsistent turn type") ;
+		} 
+		}
+	}
+
+	@Override
+	public void move(int distance, boolean manual) {
+		// TODO Auto-generated method stub
+		
+		assert ( distance >= 0 ) ;
+		
+		if ( this.batteryLevel <= 0 ) {
+			return ;
+		}
+		
+		int i ;
+		for (i = 0 ; i < distance ; i ++) {
+			
+			if ( this.batteryLevel <= 0 ) {
+				return ;
+			}
+			if ( this.hasStopped() ) {
+				return ;
+			}
+			
+			mazeController.keyDown( Event.UP ) ;
+			
+			
+			this.batteryLevel -= MOVE_FORWARD ;
+			setBatteryToZero() ;
+			
+			pathLength ++;
+		}
+	}
+
+	@Override
+	public int[] getCurrentPosition() throws Exception {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ; 
+				
+		assert ( 0 <= currentX && currentX  < mazeController.getMazeConfiguration().getWidth() );
+		assert ( 0 <= currentY && currentY  < mazeController.getMazeConfiguration().getHeight() );
+		
+		return mazeController.getCurrentPosition() ;
+	}
+
+	@Override
+	public void setMaze(MazeController maze) {
+		// TODO Auto-generated method stub
+		this.mazeController = maze;
+	}
+
+	@Override
+	public boolean isAtExit() {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ;
+		
+		if ( mazeController.getMazeConfiguration().getMazedists().isExitPosition(currentX, currentY) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean canSeeExit(Direction direction) throws UnsupportedOperationException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isInsideRoom() throws UnsupportedOperationException {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ;
+		
+		return mazeController.getMazeConfiguration().getMazecells().isInRoom(currentX, currentY) ;
+	}
+
+	@Override
+	public boolean hasRoomSensor() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public CardinalDirection getCurrentDirection() {
+		// TODO Auto-generated method stub
+
+		return mazeController.getCurrentDirection();
+	}
+
+	@Override
+	public float getBatteryLevel() {
+		// TODO Auto-generated method stub
+		return this.batteryLevel ;
+	}
+
+	@Override
+	public void setBatteryLevel(float level) {
+		// TODO Auto-generated method stub
+		this.batteryLevel = level ;
+	}
+
+	@Override
+	public float getEnergyForFullRotation() {
+		// TODO Auto-generated method stub
+		
+		return ROTATE_90 * 4;
+	}
+
+	@Override
+	public float getEnergyForStepForward() {
+		// TODO Auto-generated method stub
+		return MOVE_FORWARD;
+	}
+
+	@Override
+	public boolean hasStopped() {
+		// TODO Auto-generated method stub
+		
+		//if ( getBatteryLevel() <= 0 ) {//|| distanceToObstacle( Robot.Direction.FORWARD ) == 0 ) {
+		//    return true;
+		//}
+		
+		return isDead;
+	}
+
+	@Override
+	public int distanceToObstacle(Direction direction) throws UnsupportedOperationException {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ;
+
+		CardinalDirection cardinalDirection = convertToCardinalDirection(direction) ;
+		int [] dxdy = convertToDxDy(cardinalDirection) ;
+		
+		int distanceTo = 0;
+		
+		while (	!mazeController.getMazeConfiguration().hasWall(currentX, currentY, cardinalDirection ) ) {  
+			distanceTo ++ ;
+		}
+		
+		return distanceTo;
+	}
+
+	@Override
+	public boolean hasDistanceSensor(Direction direction) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	private void setBatteryToZero() {
+		if ( this.batteryLevel < 0 ) {
+			this.batteryLevel = 0 ;
+		}
+		isDead = true ;
+	}
+	
+	private CardinalDirection convertToCardinalDirection(Direction direction) {
+		
+		CardinalDirection cardinalDirection = null ;
+		
+	    switch(direction) {
+	    case LEFT: {
+	    	cardinalDirection = mazeController.getCurrentDirection().rotateClockwise();
+	    	return cardinalDirection ; 	
+	    }
+	    case RIGHT: {
+	    	cardinalDirection = mazeController.getCurrentDirection().rotateCounterClockwise();
+	    	return cardinalDirection ; 	
+
+	    }
+	    case FORWARD: {
+	    	cardinalDirection = mazeController.getCurrentDirection();
+	    	
+	    }
+	    case BACKWARD: {
+	    	cardinalDirection = mazeController.getCurrentDirection().oppositeDirection() ;
+	    }
+	    
+	    default: System.out.println("Inconsistent Direction Type");
+	    }
+	    
+	    assert (cardinalDirection != null) ;
+	    
+	    return cardinalDirection ;
+	}
+	
+	private int[] convertToDxDy (CardinalDirection cardinalDirection) {
+		
+		int [] dxdy = new int [2] ;
+		
+		switch(cardinalDirection) {
+		case North: { 
+			dxdy[0] = 0 ;
+			dxdy[1] = -1 ;
+		}
+		case East : {
+			dxdy[0] = 1 ;
+			dxdy[1] = 0 ;
+		}
+		case South: {
+			dxdy[0] = 0 ;
+			dxdy[1] = 1 ;
+		}
+		case West : {
+			dxdy[0] = -1 ;
+			dxdy[1] = 0 ;
+		}
+		}
+		
+		return dxdy ;		
+	}
+
+}

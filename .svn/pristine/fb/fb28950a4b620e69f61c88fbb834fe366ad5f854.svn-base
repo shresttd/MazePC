@@ -1,0 +1,411 @@
+package falstad;
+
+import java.awt.Event;
+
+import generation.CardinalDirection;
+
+public class BasicRobot implements Robot {
+	
+	private MazeController mazeController ;
+	private float batteryLevel ;
+	
+	static final float INITIAL_BATTERY_LEVEL = 2500 ;
+    
+	static final float DISTANCE_SENSING = 1 ;
+	static final float ROTATE_90 = 3 ;
+	static final float MOVE_FORWARD = 5 ;
+		
+	boolean isDead = false ;
+	
+	public BasicRobot() {
+		// TODO Auto-generated constructor stub
+		this.batteryLevel = INITIAL_BATTERY_LEVEL ;
+	}
+
+	@Override
+	public void rotate(Turn turn) {
+		// TODO Auto-generated method stub
+				
+		if ( this.batteryLevel <= 0 ) {
+			return ;
+		}
+		System.out.println("Turn: " + turn);
+		switch (turn) {
+		case LEFT : {
+			this.mazeController.keyDown(104) ;
+			
+			this.batteryLevel -= ROTATE_90 ;
+			setBatteryToZero() ;
+			break;
+		}
+		case RIGHT : { 
+			this.mazeController.keyDown(108) ;
+			
+			this.batteryLevel -= ROTATE_90 ;
+			setBatteryToZero() ;
+			break;
+		}
+		
+		case AROUND : { 
+			this.batteryLevel -= ROTATE_90 * 2;
+
+			this.mazeController.keyDown(108) ;
+			this.mazeController.keyDown(108) ;
+			
+			setBatteryToZero() ;
+			break;
+		}
+		default : {		} 
+		
+		}
+	}
+
+	@Override
+	public void move(int distance, boolean manual) {
+		// TODO Auto-generated method stub
+		
+		assert ( distance >= 0 ) ;
+		
+		if ( this.batteryLevel <= 0 ) {
+			return ;
+		}
+		
+		int i ;
+		for (i = 0 ; i < distance ; i ++) {
+			
+			if ( this.batteryLevel <= 0 ) {
+				return ;
+			}
+			if ( this.hasStopped() ) {
+				return ;
+			}
+			
+			this.batteryLevel -= MOVE_FORWARD ;
+			this.mazeController.keyDown( 107 ) ;
+			
+			setBatteryToZero() ;
+		}
+	}
+
+	@Override
+	public int[] getCurrentPosition() throws Exception {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ; 
+				
+		assert ( 0 <= currentX && currentX  < mazeController.getMazeConfiguration().getWidth() );
+		assert ( 0 <= currentY && currentY  < mazeController.getMazeConfiguration().getHeight() );
+		
+		return mazeController.getCurrentPosition() ;
+	}
+
+	@Override
+	public void setMaze(MazeController maze) {
+		// TODO Auto-generated method stub
+		this.mazeController = maze;
+	}
+	
+	public MazeController getMazeController() {
+		return this.mazeController ;
+	}
+
+	@Override
+	public boolean isAtExit() {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ;
+		
+		if ( mazeController.getMazeConfiguration().getMazedists().isExitPosition(currentX, currentY) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean canSeeExit(Direction direction) throws UnsupportedOperationException {
+		// TODO Auto-generated method stub
+		
+		/*int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ;
+
+		int exitX = mazeController.getMazeConfiguration().getMazedists().getExitPosition()[0] ;
+		int exitY = mazeController.getMazeConfiguration().getMazedists().getExitPosition()[1] ;
+
+		CardinalDirection cardinalDirection = convertToCardinalDirection(direction) ;
+		
+		while (	!mazeController.getMazeConfiguration().hasWall(currentX, currentY, cardinalDirection ) 
+				|| isInsideBoard(currentX, currentY) ) {  					//might have case where it goes out of bounds
+			
+			if (currentX == exitX && currentY == exitY ) {
+				return true ;
+			}
+			
+			switch (cardinalDirection) {
+			case East : currentX ++ ;
+			case West : currentX -- ;
+			case South : currentY ++ ;
+			case North: currentY --;
+			}
+		} */
+		
+		if ( this.distanceToObstacle(direction) == Integer.MAX_VALUE ) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	@Override
+	public boolean isInsideRoom() throws UnsupportedOperationException {
+		// TODO Auto-generated method stub
+		
+		int currentX = mazeController.getCurrentPosition()[0] ;
+		int currentY = mazeController.getCurrentPosition()[1] ;
+		
+		return mazeController.getMazeConfiguration().getMazecells().isInRoom(currentX, currentY) ;
+	}
+
+	@Override
+	public boolean hasRoomSensor() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public CardinalDirection getCurrentDirection() {
+		// TODO Auto-generated method stub
+
+		return mazeController.getCurrentDirection();
+	}
+
+	@Override
+	public float getBatteryLevel() {
+		// TODO Auto-generated method stub
+		return this.batteryLevel ;
+	}
+
+	@Override
+	public void setBatteryLevel(float level) {
+		// TODO Auto-generated method stub
+		assert (level >= 0) ;
+		
+		this.batteryLevel = level ;
+	}
+
+	@Override
+	public float getEnergyForFullRotation() {
+		// TODO Auto-generated method stub
+		
+		return ROTATE_90 * 4;
+	}
+
+	@Override
+	public float getEnergyForStepForward() {
+		// TODO Auto-generated method stub
+		return MOVE_FORWARD;
+	}
+
+	@Override
+	public boolean hasStopped() {
+		// TODO Auto-generated method stub
+		
+		//if ( getBatteryLevel() <= 0 ) {//|| distanceToObstacle( Robot.Direction.FORWARD ) == 0 ) {
+		//    return true;
+		//}
+		
+		return isDead;
+	}
+
+	@Override
+	public int distanceToObstacle(Direction direction) throws UnsupportedOperationException {
+		// TODO Auto-generated method stub
+		
+		CardinalDirection cardinalDirection = convertToCardinalDirection(direction) ;
+		
+		int[] curPos = mazeController.getCurrentPosition() ;
+		int[] exitPos = mazeController.getMazeConfiguration().getMazedists().getExitPosition() ;		
+		
+		int distanceTo = 0;
+
+		/*if (curPos[0] == exitPos[0] && curPos[1] == exitPos[1]) {
+			if (!mazeController.getMazeConfiguration().hasWall(curPos[0], curPos[1], cardinalDirection) ) {
+				switch(cardinalDirection) {
+				case East : {
+					if ( mazeController.isOutside(curPos[0] ++, curPos[0] )) {
+						distanceTo = Integer.MAX_VALUE ;
+					}
+					break;
+				}
+				case West : {
+					if ( mazeController.isOutside(curPos[0] -- , curPos[0] )) {
+						distanceTo = Integer.MAX_VALUE ;
+					}
+					break;
+				}
+				case South : {
+					if ( mazeController.isOutside(curPos[0], curPos[0] ++ )) {
+						distanceTo = Integer.MAX_VALUE ;
+					}
+					break;
+				}
+				case North : {
+					if ( mazeController.isOutside(curPos[0], curPos[0] -- )) {
+						distanceTo = Integer.MAX_VALUE ;
+						System.out.println("here");
+					}
+					break;
+				}
+				}
+				return distanceTo ;
+			}
+		} */
+	
+		while (	!mazeController.getMazeConfiguration().hasWall(curPos[0], curPos[1], cardinalDirection ) ) { 
+			switch (cardinalDirection) {
+			case East : {
+				curPos[0] ++ ;
+				break;
+			}
+			case West : {
+				curPos[0] -- ;
+				break;
+			}
+			case South : {
+				curPos[1] ++ ;
+				break;
+			}
+			case North: {
+				curPos[1] -- ;
+				break;
+			}
+			}
+			
+			distanceTo ++ ;  
+		}
+		return distanceTo;
+	}
+
+	@Override
+	public boolean hasDistanceSensor(Direction direction) {
+		// TODO Auto-generated method stub
+		
+		for ( Robot.Direction dir : Robot.Direction.values() ) {
+			if (dir == direction) {
+				return true ;
+			}
+		}
+		return false ;
+	}
+	
+	private void setBatteryToZero() {
+		if ( this.batteryLevel <= 0 ) {
+			this.batteryLevel = 0 ;
+			isDead = true ;
+		}
+	}
+	
+	private CardinalDirection convertToCardinalDirection(Direction direction) {
+		
+		CardinalDirection cardinalDirection = null ;
+		
+	    switch(direction) {
+	    case LEFT: {
+	    	switch ( mazeController.getCurrentDirection() ) {
+	    	case East : {
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateClockwise();	
+		    	break;
+	    	}
+	    	case West : {
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateClockwise();	    	
+		    	break;
+	    	}
+	    	case South : {
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateClockwise();
+		    	break;
+	    	}
+	    	case North : { 
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateClockwise();
+		    	break;
+	    	}
+	    	}
+		    break;
+
+	    }
+	    case RIGHT: {
+	    	switch ( mazeController.getCurrentDirection() ) {
+	    	case East : {
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateCounterClockwise();	 
+		    	break;
+	    	}
+	    	case West : {
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateCounterClockwise();
+		    	break;
+	    	}
+	    	case South : {
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateCounterClockwise();
+		    	break;
+	    	}
+	    	case North : { 
+		    	cardinalDirection = mazeController.getCurrentDirection().rotateCounterClockwise();
+		    	break;
+	    	}
+	    	}
+	    	break;
+	    }
+	    case FORWARD: {
+	    	cardinalDirection = mazeController.getCurrentDirection();
+	    	break;
+	    	
+	    }
+	    case BACKWARD: {
+	    	cardinalDirection = mazeController.getCurrentDirection().oppositeDirection() ;
+	    	break;
+	    }
+	    
+	    default: System.out.println("Inconsistent Direction Type");
+	    }
+	    
+	    assert (cardinalDirection != null) ;
+	    
+	    return cardinalDirection ;
+	}
+	
+	private int[] convertToDxDy (CardinalDirection cardinalDirection) {
+		
+		int [] dxdy = new int [2] ;
+		
+		switch(cardinalDirection) {
+		case North: { 
+			dxdy[0] = 0 ;
+			dxdy[1] = -1 ;
+		}
+		case East : {
+			dxdy[0] = 1 ;
+			dxdy[1] = 0 ;
+		}
+		case South: {
+			dxdy[0] = 0 ;
+			dxdy[1] = 1 ;
+		}
+		case West : {
+			dxdy[0] = -1 ;
+			dxdy[1] = 0 ;
+		}
+		}
+		
+		return dxdy ;		
+	}
+	
+	private boolean isInsideBoard( int x, int y ) {
+		if (0 <= x && x < mazeController.getMazeConfiguration().getWidth() 
+				&& 0 <= y && y < mazeController.getMazeConfiguration().getHeight() ) {
+			
+			return true ;
+		}
+		return false ; 
+	}
+
+}

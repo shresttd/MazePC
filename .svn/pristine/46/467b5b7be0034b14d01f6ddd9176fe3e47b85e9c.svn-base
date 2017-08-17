@@ -1,0 +1,119 @@
+package generation;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Random;
+
+public class MazeBuilderEller extends MazeBuilder implements Runnable {
+    	
+	public MazeBuilderEller() {
+		// TODO Auto-generated constructor stub
+		super();
+		System.out.println("MazeBuilderPrim uses Prim's algorithm to generate maze.");
+	}
+	
+	public MazeBuilderEller(boolean det) {
+		super(det);
+		System.out.println("MazeBuilderPrim uses Prim's algorithm to generate maze.");
+	}
+	
+	@Override
+	protected void generatePathways() {                 
+		int [][] grid = new int [height][width];
+		
+		int row = 0;
+		int column = 0;
+		
+		int parent = 1;
+		
+		for (column = 0; column < width - 1; column++){
+			grid[row][column] = parent;
+			parent++;
+		}
+		
+		for (column = 0; column < width - 1; column++){           //initialize first row
+			
+			boolean mergeHorizontal = flipCoin();
+			
+			if (mergeHorizontal == true){
+				
+				if (grid[row][column + 1] != grid[row][column]) {    //if not in same set already
+				    grid[row][column + 1] = grid[row][column];   		//merge
+				    //cells.deleteWall(wall(column, row, east);
+				} 
+			}
+			
+			boolean mergeVertically = flipCoin();         //NEED CASE WHERE IN CASE ITS 
+			
+			//if only one{
+		    //grid[row + 1][column] = grid[row][column];
+	    	//cells.deleteWall(wall(column, row, south);
+			
+			if (mergeVertically == true){
+				
+				grid[row + 1][column] = grid[row][column];           //merge downwards
+				//cells.deleteWall(wall(column, row, south);
+			}
+		}
+		row ++;
+		
+		while (row < height - 1){
+			
+			for (column = 0; column < width - 1; column++ ){
+				if (grid[row][column] == 0) {           //meaning if that spot is not empty
+					grid[row][column] = parent;         //assign it to a new set
+					parent++;
+				}
+			}
+			
+			for (column = 0; column < width - 1; column++){           //initialize first row
+				
+				boolean mergeHorizontal = flipCoin();
+				
+				if (mergeHorizontal == true){
+					
+					if (grid[row][column + 1] != grid[row][column]) {    //if not in same set already
+					    grid[row][column + 1] = grid[row][column];   		//merge
+					    //cells.deleteWall(wall(column, row, east);
+					} 
+				}
+				
+				boolean mergeVertically = flipCoin();             //NEED CASE WHERE ITS THE ONLY ONE IN THE SET
+				
+				//if only one{
+				    //grid[row + 1][column] = grid[row][column];
+			    	//cells.deleteWall(wall(column, row, south);
+
+				if (mergeVertically == true){
+					grid[row + 1][column] = grid[row][column];           //merge downwards
+					//cells.deleteWall(wall(column, row, south);
+				}
+			}
+			
+			row ++;
+		}
+		//row == height - 1; aka last row. MIGHT HAVE ISSUE WHERE SECOND LAST ROW DOESN'T VERTICALLY MERGE INTO LAST ROW!!
+		
+		for (column = 0; column < width - 1; column++){
+		    if ( grid[row][column + 1] != grid[row][column] ) {
+		    	grid[row][column + 1] = grid[row][column];                       //merged
+		    	//cells.deleteWall( wall(column, row, east);
+		    }
+		}
+		
+	}
+	
+	private boolean flipCoin(){
+					
+		Random random = new Random();
+			
+		//random.setSeed(1);
+					
+	    boolean coin = random.nextBoolean();
+	   
+	    return coin;
+	}
+	
+	
+
+}

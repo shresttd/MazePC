@@ -1,0 +1,11 @@
+package falstad;
+
+import javax.swing.ComboBoxModel;
+
+public class ComboBox implements ComboBoxModel<E> {
+
+	public ComboBox() {
+		// TODO Auto-generated constructor stub
+	}
+
+}
